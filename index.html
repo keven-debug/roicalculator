@@ -393,19 +393,14 @@ function initHubSpotForm() {
     return;
   }
 
-  // Watch for HubSpot's success message in the DOM — more reliable than onFormSubmitted
-  var observer = new MutationObserver(function(mutations) {
-    var submitted = document.querySelector('#hs-form-target .submitted-message');
-    if (submitted) {
-      observer.disconnect();
+  // Listen for HubSpot postMessage events from the iframe
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'hsFormCallback' && event.data.eventName === 'onFormSubmitted') {
       var r = pendingROI || computeROI();
-      // Grab name from the form before HubSpot clears it
-      var firstnameInput = document.querySelector('#hs-form-target input[name="firstname"]');
-      var firstname = firstnameInput ? firstnameInput.value : '';
+      var firstname = (event.data.data && event.data.data.submissionValues && event.data.data.submissionValues.firstname) || '';
       showResults(r, firstname);
     }
   });
-  observer.observe(document.getElementById('hs-form-target'), { childList: true, subtree: true });
 
   hbspt.forms.create({
     portalId: "5408365",
