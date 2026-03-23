@@ -111,6 +111,7 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
 .btn-outline{display:inline-block;background:#fff;color:#2563eb;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid #2563eb;cursor:pointer;margin-left:10px}
 .disclaimer{font-size:11px;color:#94a3b8;text-align:center;margin-top:20px;line-height:1.6}
 .hidden{display:none}
+#hs-form-wrapper{display:none}
 </style>
 </head>
 <body>
@@ -126,6 +127,11 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
   <div class="step-item"><div class="step-circle" id="sc2">2</div><div class="step-label" id="sl2">Preview ROI</div></div>
   <div class="step-line" id="sline2"></div>
   <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-label" id="sl3">Full report</div></div>
+</div>
+
+<!-- Hidden HubSpot form — submits in background -->
+<div id="hs-form-wrapper">
+  <div id="hs-form-target"></div>
 </div>
 
 <!-- STEP 1 -->
@@ -283,11 +289,25 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
 </div>
 
 </div>
+
+<!-- HubSpot embed script -->
+<script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
 <script>
 function $(id){return document.getElementById(id);}
 function fmtK(n){return n>=1000?'$'+Math.round(n/1000)+'K':'$'+Math.round(n);}
 function fmt(n){return '$'+Math.round(n).toLocaleString();}
 function fmtN(n){return Math.round(n).toLocaleString();}
+
+// Init hidden HubSpot form
+hbspt.forms.create({
+  portalId: "5408365",
+  formId: "61d0077b-e31a-4c56-bccb-c48207498154",
+  region: "na1",
+  target: "#hs-form-target",
+  onFormReady: function(){
+    console.log('HubSpot form ready');
+  }
+});
 
 function slInit(id,outId,fn){
   var el=$(id),out=$(outId);
@@ -347,22 +367,34 @@ $('btn-gate').addEventListener('click',function(){
   var r=computeROI();
   var name=$('fname').value.trim();
 
-  // Submit to HubSpot silently
-  fetch('https://api.hsforms.com/submissions/v3/integration/submit/5408365/61d0077b-e31a-4c56-bccb-c48207498154',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      fields:[
-        {name:'firstname',value:$('fname').value.trim()},
-        {name:'lastname', value:$('lname').value.trim()},
-        {name:'email',    value:$('email').value.trim()},
-        {name:'company',  value:$('lead-co').value.trim()}
-      ],
-      context:{pageUri:window.location.href,pageName:'Axya ROI Calculator'}
-    })
-  }).catch(function(){});
+  // Fill hidden HubSpot form fields and submit
+  var hsForm=document.querySelector('#hs-form-target form');
+  if(hsForm){
+    function fillField(name,value){
+      var input=hsForm.querySelector('[name="'+name+'"]');
+      if(input){
+        input.value=value;
+        // Trigger React/HubSpot change events
+        var evt=new Event('input',{bubbles:true});
+        input.dispatchEvent(evt);
+        var evt2=new Event('change',{bubbles:true});
+        input.dispatchEvent(evt2);
+      }
+    }
+    fillField('firstname',$('fname').value.trim());
+    fillField('lastname',$('lname').value.trim());
+    fillField('email',$('email').value.trim());
+    fillField('company',$('lead-co').value.trim());
 
-  // Always show step 3 regardless of HubSpot response
+    // Submit the hidden form
+    var submitBtn=hsForm.querySelector('[type="submit"]');
+    if(submitBtn){submitBtn.click();}
+    else{hsForm.submit();}
+  } else {
+    console.warn('HubSpot form not ready yet');
+  }
+
+  // Always show step 3 regardless
   $('results-name').textContent=name+"'s ROI Report";
   $('r-email').textContent=$('email').value.trim();
   $('r-total').textContent=fmt(r.totalLo)+' - '+fmt(r.totalHi);
