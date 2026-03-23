@@ -62,7 +62,20 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
 .blurred-row:last-child{margin-bottom:0;width:85%}
 .gate-title{font-size:18px;font-weight:800;margin-bottom:6px}
 .gate-sub{font-size:13px;color:#475569;margin-bottom:20px;line-height:1.6}
-.error{font-size:12px;color:#dc2626;margin-top:4px;display:none}
+/* HubSpot form overrides */
+#hs-form-target .hs-form-field label{font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block}
+#hs-form-target .hs-input{width:100%!important;height:42px;border:1.5px solid #e2e8f0;border-radius:8px;padding:0 14px;font-size:15px;color:#0f172a;background:#fff;outline:none}
+#hs-form-target .hs-input:focus{border-color:#2563eb}
+#hs-form-target .hs-form-field{margin-bottom:18px}
+#hs-form-target .hs-button{width:100%;height:48px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
+#hs-form-target .hs-button:hover{background:#1d4ed8}
+#hs-form-target .hs-error-msgs{font-size:12px;color:#dc2626;margin-top:4px;list-style:none;padding:0}
+#hs-form-target .submitted-message{font-size:14px;color:#16a34a;font-weight:600;text-align:center;padding:12px 0}
+#hs-form-target .legal-consent-container{font-size:11px;color:#94a3b8;margin-top:8px}
+#hs-form-target fieldset{border:none;padding:0;max-width:100%!important}
+#hs-form-target .form-columns-2 .hs-form-field{width:50%;display:inline-block;vertical-align:top;padding-right:8px}
+#hs-form-target .form-columns-2 .hs-form-field:last-child{padding-right:0;padding-left:8px}
+@media(max-width:480px){#hs-form-target .form-columns-2 .hs-form-field{width:100%;padding:0}}
 .results-header{text-align:center;padding:20px 0 8px}
 .results-header h2{font-size:22px;font-weight:800;margin-bottom:6px}
 .results-header p{font-size:14px;color:#475569}
@@ -111,7 +124,6 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
 .btn-outline{display:inline-block;background:#fff;color:#2563eb;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid #2563eb;cursor:pointer;margin-left:10px}
 .disclaimer{font-size:11px;color:#94a3b8;text-align:center;margin-top:20px;line-height:1.6}
 .hidden{display:none}
-#hs-form-wrapper{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;}
 </style>
 </head>
 <body>
@@ -127,11 +139,6 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
   <div class="step-item"><div class="step-circle" id="sc2">2</div><div class="step-label" id="sl2">Preview ROI</div></div>
   <div class="step-line" id="sline2"></div>
   <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-label" id="sl3">Full report</div></div>
-</div>
-
-<!-- Hidden HubSpot form -->
-<div id="hs-form-wrapper">
-  <div id="hs-form-target"></div>
 </div>
 
 <!-- STEP 1 -->
@@ -223,13 +230,8 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
   <div class="card">
     <div class="gate-title">Get your full ROI report</div>
     <div class="gate-sub">Enter your details and we'll send you a detailed breakdown with industry benchmarks and tips to improve your procurement operations.</div>
-    <div class="grid2">
-      <div class="field"><label>First name</label><input class="inp" type="text" id="fname" placeholder="Jane"><p class="error" id="err-fname">Required</p></div>
-      <div class="field"><label>Last name</label><input class="inp" type="text" id="lname" placeholder="Smith"><p class="error" id="err-lname">Required</p></div>
-    </div>
-    <div class="field"><label>Work email</label><input class="inp" type="email" id="email" placeholder="jane@company.com"><p class="error" id="err-email">Enter a valid work email</p></div>
-    <div class="field"><label>Company name</label><input class="inp" type="text" id="lead-co" placeholder="Acme Manufacturing"><p class="error" id="err-co">Required</p></div>
-    <button class="btn-primary" id="btn-gate">Send me the full report</button>
+    <!-- HubSpot form renders here -->
+    <div id="hs-form-target"></div>
     <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:10px">No spam. Unsubscribe anytime.</p>
   </div>
 </div>
@@ -284,32 +286,22 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
     <button class="btn-outline" onclick="window.print()">Download PDF</button>
   </div>
   <div class="disclaimer">
-    Results are estimates based on Axya customer benchmarks and industry data. Actual results may vary. Report sent to <span id="r-email">-</span>.
+    Results are estimates based on Axya customer benchmarks and industry data. Actual results may vary.
   </div>
 </div>
 
 </div>
 
+<!-- HubSpot -->
 <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+
 <script>
+
+
 function $(id){return document.getElementById(id);}
 function fmtK(n){return n>=1000?'$'+Math.round(n/1000)+'K':'$'+Math.round(n);}
 function fmt(n){return '$'+Math.round(n).toLocaleString();}
 function fmtN(n){return Math.round(n).toLocaleString();}
-
-// Store HubSpot form reference once it's ready
-var hsFormEl = null;
-
-hbspt.forms.create({
-  portalId: "5408365",
-  formId: "61d0077b-e31a-4c56-bccb-c48207498154",
-  region: "na1",
-  target: "#hs-form-target",
-  onFormReady: function(form) {
-    hsFormEl = form[0] || form; // jQuery or DOM element
-    console.log('HubSpot form ready', hsFormEl);
-  }
-});
 
 function slInit(id,outId,fn){
   var el=$(id),out=$(outId);
@@ -342,12 +334,17 @@ function computeROI(){
     hrsSaved:Math.round(buyers*2080*0.5),
     b1_lo:b1_lo,b1_hi:b1_hi,b2_lo:b2_lo,b2_hi:b2_hi,
     b3_lo:b3_lo,b3_hi:b3_hi,b4_lo:b4_lo,b4_hi:b4_hi,
-    nonBuyers:nonBuyers,hrRate:hrRate,lines:lines
+    nonBuyers:nonBuyers,hrRate:hrRate,lines:lines,
+    buyers:buyers,salary:salary
   };
 }
 
+// Store ROI data so we can send it when HubSpot fires onFormSubmitted
+var pendingROI = null;
+
 $('btn-calc').addEventListener('click',function(){
   var r=computeROI();
+  pendingROI = r;
   $('teaser-total').textContent=fmtK(r.totalLo)+' - '+fmtK(r.totalHi);
   $('t-roi').textContent=r.roiLo.toFixed(1)+'x - '+r.roiHi.toFixed(1)+'x';
   $('t-payback').textContent=r.paybackMo<=1?'<1 mo':r.paybackMo+' mo';
@@ -355,66 +352,17 @@ $('btn-calc').addEventListener('click',function(){
   setStep(2);
 });
 
-function validEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
-function showErr(id,v){$(id).style.display=v?'block':'none';}
 
-function fillAndSubmitHubSpot(firstname, lastname, email, company) {
-  var hsTarget = hsFormEl || document.querySelector('#hs-form-target form');
-  var form = hsTarget ? (hsTarget.tagName === 'FORM' ? hsTarget : hsTarget.closest('form')) : null;
-  if (!form) { console.warn('HS form not found'); return; }
-
-  function setVal(name, value) {
-    var input = form.querySelector('[name="' + name + '"]');
-    if (!input) return;
-    var nativeSet = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-    nativeSet.call(input, value);
-    input.dispatchEvent(new Event('input', {bubbles:true}));
-    input.dispatchEvent(new Event('change', {bubbles:true}));
-  }
-
-  setVal('firstname', firstname);
-  setVal('lastname', lastname);
-  setVal('email', email);
-  setVal('company', company);
-
-  // Give React a tick to register changes, then submit
-  setTimeout(function() {
-    var btn = form.querySelector('[type="submit"]');
-    if (btn) { btn.click(); }
-    else { form.submit(); }
-  }, 100);
-}
-
-$('btn-gate').addEventListener('click',function(){
-  var ok=true;
-  if(!$('fname').value.trim()){showErr('err-fname',true);ok=false;}else showErr('err-fname',false);
-  if(!$('lname').value.trim()){showErr('err-lname',true);ok=false;}else showErr('err-lname',false);
-  if(!validEmail($('email').value)){showErr('err-email',true);ok=false;}else showErr('err-email',false);
-  if(!$('lead-co').value.trim()){showErr('err-co',true);ok=false;}else showErr('err-co',false);
-  if(!ok)return;
-
-  var r=computeROI();
-  var name=$('fname').value.trim();
-
-  // Submit to HubSpot
-  fillAndSubmitHubSpot(
-    $('fname').value.trim(),
-    $('lname').value.trim(),
-    $('email').value.trim(),
-    $('lead-co').value.trim()
-  );
-
-  // Always show step 3
-  $('results-name').textContent=name+"'s ROI Report";
-  $('r-email').textContent=$('email').value.trim();
-  $('r-total').textContent=fmt(r.totalLo)+' - '+fmt(r.totalHi);
-  $('r-roi').textContent=r.roiLo.toFixed(1)+'x - '+r.roiHi.toFixed(1)+'x';
-  $('r-payback').textContent=r.paybackMo<=1?'< 1 month':r.paybackMo+' months';
-  $('r-hours').textContent=fmtN(r.hrsSaved);
+function showResults(r, firstname) {
+  $('results-name').textContent = firstname + "'s ROI Report";
+  $('r-total').textContent = fmt(r.totalLo) + ' - ' + fmt(r.totalHi);
+  $('r-roi').textContent   = r.roiLo.toFixed(1) + 'x - ' + r.roiHi.toFixed(1) + 'x';
+  $('r-payback').textContent = r.paybackMo <= 1 ? '< 1 month' : r.paybackMo + ' months';
+  $('r-hours').textContent = fmtN(r.hrsSaved);
 
   var benefits=[
     {title:'1. Increased buyer productivity',sub:'Time reallocated to value-added tasks',
-     rows:[['Buyers on your team',$('buyers').value+' people'],['Avg. buyer salary',fmt(+$('salary').value)],['Productivity gain','2x (50% time saved)'],['Hours saved per year',fmtN(r.hrsSaved)+' hrs']],
+     rows:[['Buyers on your team',r.buyers+' people'],['Avg. buyer salary',fmt(r.salary)],['Productivity gain','2x (50% time saved)'],['Hours saved per year',fmtN(r.hrsSaved)+' hrs']],
      lo:r.b1_lo,hi:r.b1_hi},
     {title:'2. Reduction in unexpected late orders',sub:'More visibility and proactive intelligence',
      rows:[['PO lines per year',fmtN(r.lines)],['Avg. late order rate','10%'],['Reduction in late orders','67%'],['Cost per late line','$170']],
@@ -436,7 +384,39 @@ $('btn-gate').addEventListener('click',function(){
   }).join('');
 
   setStep(3);
-});
+}
+
+// Init HubSpot form — wait for script to load before calling
+function initHubSpotForm() {
+  if (typeof hbspt === 'undefined') {
+    setTimeout(initHubSpotForm, 100);
+    return;
+  }
+  hbspt.forms.create({
+  portalId: "5408365",
+  formId: "61d0077b-e31a-4c56-bccb-c48207498154",
+  region: "na1",
+  target: "#hs-form-target",
+  onFormSubmitted: function(form, data) {
+    var r = pendingROI || computeROI();
+    // Extract submitted values from the form data object
+    var fields = {};
+    if (data && data.submissionValues) {
+      fields = data.submissionValues;
+    } else {
+      // Fallback: read directly from the form inputs
+      var inputs = document.querySelectorAll('#hs-form-target input');
+      inputs.forEach(function(input){
+        if(input.name) fields[input.name] = input.value;
+      });
+    }
+    var firstname = fields.firstname || '';
+    // Show the results
+    showResults(r, firstname);
+  }
+  });
+}
+initHubSpotForm();
 
 function setStep(n){
   $('step1').classList.toggle('hidden',n!==1);
