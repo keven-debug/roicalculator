@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axya ROI Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1f5f9;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:32px 16px 80px}
+
+/* Logo */
+.brand{text-align:center;margin-bottom:28px}
+.brand-logo{font-size:28px;font-weight:900;color:#2563eb;letter-spacing:-1px}
+.brand-logo span{color:#0f172a}
+
+/* Hero */
+.hero{text-align:center;margin-bottom:32px}
+.hero h1{font-size:26px;font-weight:800;line-height:1.25;margin-bottom:10px}
+.hero p{font-size:15px;color:#475569;line-height:1.6}
+.badge{display:inline-block;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:14px;letter-spacing:.03em;text-transform:uppercase}
+
+/* Cards */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px;margin-bottom:16px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.card-sub{font-size:13px;color:#64748b;margin-bottom:22px;line-height:1.5}
+
+/* Steps indicator */
+.steps-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:120px}
+.step-circle{width:32px;height:32px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#94a3b8;background:#fff;transition:all .3s;position:relative;z-index:1}
+.step-circle.active{border-color:#2563eb;color:#2563eb}
+.step-circle.done{border-color:#16a34a;background:#16a34a;color:#fff}
+.step-label{font-size:11px;color:#94a3b8;font-weight:600;text-align:center;text-transform:uppercase;letter-spacing:.03em}
+.step-label.active{color:#2563eb}
+.step-label.done{color:#16a34a}
+.step-line{flex:1;height:2px;background:#e2e8f0;margin-top:-22px;max-width:60px}
+.step-line.done{background:#16a34a}
+
+/* Form fields */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+.field .hint{font-size:11px;color:#94a3b8;margin-top:4px}
+.inp{width:100%;height:42px;border:1.5px solid #e2e8f0;border-radius:8px;padding:0 14px;font-size:15px;color:#0f172a;background:#fff;outline:none;transition:border-color .15s}
+.inp:focus{border-color:#2563eb}
+.inp-prefix{display:flex;align-items:stretch;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;transition:border-color .15s}
+.inp-prefix:focus-within{border-color:#2563eb}
+.inp-prefix .pfx{padding:0 12px;background:#f8fafc;border-right:1px solid #e2e8f0;font-size:14px;color:#64748b;display:flex;align-items:center}
+.inp-prefix input{flex:1;border:none;outline:none;padding:0 12px;font-size:15px;height:40px;color:#0f172a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}}
+
+/* Slider */
+.slider-row{display:flex;align-items:center;gap:10px;margin-top:6px}
+.slider-row input[type=range]{flex:1;height:4px;accent-color:#2563eb}
+.slider-val{font-size:14px;font-weight:700;min-width:70px;text-align:right;color:#0f172a}
+
+/* Primary button */
+.btn-primary{width:100%;height:48px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:8px}
+.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
+
+/* Teaser result */
+.teaser-box{background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);border:1.5px solid #bfdbfe;border-radius:14px;padding:24px;margin-bottom:16px;text-align:center}
+.teaser-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#2563eb;margin-bottom:8px}
+.teaser-amount{font-size:42px;font-weight:900;color:#16a34a;letter-spacing:-1px;margin-bottom:4px}
+.teaser-sub{font-size:13px;color:#475569;margin-bottom:16px}
+.teaser-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.t-metric{background:#fff;border-radius:10px;padding:14px;border:1px solid #e2e8f0}
+.t-metric .lbl{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.t-metric .val{font-size:20px;font-weight:800;color:#0f172a}
+
+/* Blurred locked section */
+.locked-preview{position:relative;margin-bottom:20px}
+.blur-content{filter:blur(5px);pointer-events:none;user-select:none}
+.lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,.7);border-radius:10px;gap:8px}
+.lock-icon{font-size:28px}
+.lock-msg{font-size:14px;font-weight:700;color:#0f172a;text-align:center}
+.lock-sub{font-size:12px;color:#475569;text-align:center}
+.blurred-rows{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px}
+.blurred-row{height:14px;background:#e2e8f0;border-radius:4px;margin-bottom:10px}
+.blurred-row:nth-child(2){width:80%}
+.blurred-row:nth-child(3){width:90%}
+.blurred-row:nth-child(4){width:70%}
+.blurred-row:last-child{margin-bottom:0;width:85%}
+
+/* Gate card */
+.gate-title{font-size:18px;font-weight:800;margin-bottom:6px}
+.gate-sub{font-size:13px;color:#475569;margin-bottom:20px;line-height:1.6}
+.error{font-size:12px;color:#dc2626;margin-top:4px;display:none}
+
+/* Results */
+.results-header{text-align:center;padding:20px 0 8px}
+.results-header h2{font-size:22px;font-weight:800;margin-bottom:6px}
+.results-header p{font-size:14px;color:#475569}
+
+.roi-summary{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:14px;padding:24px;margin-bottom:16px;text-align:center}
+.roi-summary .s-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.8;margin-bottom:8px}
+.roi-summary .s-amount{font-size:48px;font-weight:900;letter-spacing:-2px;margin-bottom:4px}
+.roi-summary .s-sub{font-size:13px;opacity:.8;margin-bottom:20px}
+.roi-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.roi-col{background:rgba(255,255,255,.15);border-radius:10px;padding:14px;text-align:center}
+.roi-col .cl{font-size:11px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.roi-col .cv{font-size:18px;font-weight:800}
+
+/* Benefit breakdown */
+.benefit-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.bc-header{background:#2563eb;color:#fff;padding:10px 16px}
+.bc-header .bt{font-weight:700;font-size:14px}
+.bc-header .bs{font-size:12px;opacity:.8;margin-top:2px}
+.bc-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.bc-row:last-child{border-bottom:none}
+.bc-row .rl{color:#475569}
+.bc-row .rv{font-weight:700;color:#0f172a}
+.bc-footer{background:#f0fdf4;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.bc-footer .fl{font-size:12px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.04em}
+.bc-footer .fv{font-size:16px;font-weight:800;color:#16a34a}
+
+/* Benchmarks */
+.bench-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:12px}
+.bench-card h3{font-size:14px;font-weight:700;margin-bottom:14px;color:#0f172a}
+.bench-row{margin-bottom:12px}
+.bench-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bench-top .bl{color:#475569;font-weight:600}
+.bench-top .bv{font-weight:700;color:#0f172a}
+.bench-track{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.bench-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.bench-fill.blue{background:#2563eb}
+.bench-fill.green{background:#16a34a}
+.bench-fill.amber{background:#f59e0b}
+
+/* Tips */
+.tip-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:12px}
+.tip-card h3{font-size:14px;font-weight:700;margin-bottom:14px}
+.tip-item{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.tip-item:last-child{margin-bottom:0}
+.tip-num{width:26px;height:26px;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tip-text .tt{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:2px}
+.tip-text .ts{font-size:12px;color:#475569;line-height:1.5}
+
+/* CTA */
+.cta-card{background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:1px solid #bbf7d0;border-radius:14px;padding:24px;text-align:center;margin-bottom:16px}
+.cta-card h3{font-size:18px;font-weight:800;margin-bottom:8px}
+.cta-card p{font-size:13px;color:#475569;margin-bottom:20px;line-height:1.6}
+.btn-cta{display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:background .15s}
+.btn-cta:hover{background:#1d4ed8}
+.btn-outline{display:inline-block;background:#fff;color:#2563eb;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid #2563eb;cursor:pointer;transition:background .15s;margin-left:10px}
+.btn-outline:hover{background:#eff6ff}
+
+.disclaimer{font-size:11px;color:#94a3b8;text-align:center;margin-top:20px;line-height:1.6}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Brand -->
+<div class="brand">
+  <div class="brand-logo">ax<span>ya</span></div>
+</div>
+
+<!-- Steps -->
+<div class="steps-row" id="steps-row">
+  <div class="step-item"><div class="step-circle active" id="sc1">1</div><div class="step-label active" id="sl1">Your data</div></div>
+  <div class="step-line" id="sline1"></div>
+  <div class="step-item"><div class="step-circle" id="sc2">2</div><div class="step-label" id="sl2">Preview ROI</div></div>
+  <div class="step-line" id="sline2"></div>
+  <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-label" id="sl3">Full report</div></div>
+</div>
+
+<!-- STEP 1: Inputs -->
+<div id="step1">
+  <div class="hero">
+    <div class="badge">Free ROI Calculator</div>
+    <h1>How much is manual procurement costing you?</h1>
+    <p>Answer 5 quick questions and we'll calculate your potential savings with Axya's order management platform.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Tell us about your procurement team</div>
+    <div class="card-sub">Takes under 2 minutes. No commitment required.</div>
+
+    <div class="grid2">
+      <div class="field">
+        <label>Industry</label>
+        <select class="inp" id="industry">
+          <option value="machinery">Industrial Machinery</option>
+          <option value="aerospace">Aerospace & Defense</option>
+          <option value="auto">Automotive</option>
+          <option value="electronics">Electronics</option>
+          <option value="medical">Medical Devices</option>
+          <option value="food">Food & Beverage</option>
+          <option value="other">Other Manufacturing</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Company size</label>
+        <select class="inp" id="emp_range">
+          <option value="50">10–50 employees</option>
+          <option value="150" selected>51–250 employees</option>
+          <option value="500">251–1,000 employees</option>
+          <option value="2000">1,000+ employees</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Number of buyers / procurement staff</label>
+      <div class="slider-row">
+        <input type="range" id="buyers" min="1" max="50" step="1" value="3">
+        <span class="slider-val" id="buyers-out">3 people</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Average buyer salary ($ / year)</label>
+      <div class="slider-row">
+        <input type="range" id="salary" min="40000" max="150000" step="5000" value="65000">
+        <span class="slider-val" id="salary-out">$65,000</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Purchase order lines sent per year</label>
+      <div class="slider-row">
+        <input type="range" id="po_lines" min="500" max="100000" step="500" value="10000">
+        <span class="slider-val" id="polines-out">10,000</span>
+      </div>
+      <div class="hint">Each PO typically contains multiple line items</div>
+    </div>
+
+    <button class="btn-primary" id="btn-calc">Calculate my ROI →</button>
+  </div>
+</div>
+
+<!-- STEP 2: Teaser -->
+<div id="step2" class="hidden">
+  <div class="teaser-box">
+    <div class="teaser-label">Your estimated annual savings</div>
+    <div class="teaser-amount" id="teaser-total">—</div>
+    <div class="teaser-sub">Based on your procurement profile</div>
+    <div class="teaser-metrics">
+      <div class="t-metric"><div class="lbl">ROI multiple</div><div class="val" id="t-roi">—</div></div>
+      <div class="t-metric"><div class="lbl">Payback period</div><div class="val" id="t-payback">—</div></div>
+      <div class="t-metric"><div class="lbl">Hours saved / yr</div><div class="val" id="t-hours">—</div></div>
+      <div class="t-metric"><div class="lbl">Late orders reduced</div><div class="val">67%</div></div>
+    </div>
+  </div>
+
+  <!-- Locked preview -->
+  <div class="locked-preview">
+    <div class="blurred-rows blur-content">
+      <div class="blurred-row"></div>
+      <div class="blurred-row"></div>
+      <div class="blurred-row"></div>
+      <div class="blurred-row"></div>
+      <div class="blurred-row"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-msg">Unlock your full breakdown</div>
+      <div class="lock-sub">See savings by category, industry benchmarks<br>and personalised tips — free</div>
+    </div>
+  </div>
+
+  <!-- Gate -->
+  <div class="card">
+    <div class="gate-title">Get your full ROI report</div>
+    <div class="gate-sub">Enter your details and we'll send you a detailed breakdown with industry benchmarks and tips to improve your procurement operations.</div>
+    <div class="grid2">
+      <div class="field"><label>First name</label><input class="inp" type="text" id="fname" placeholder="Jane"><p class="error" id="err-fname">Required</p></div>
+      <div class="field"><label>Last name</label><input class="inp" type="text" id="lname" placeholder="Smith"><p class="error" id="err-lname">Required</p></div>
+    </div>
+    <div class="field"><label>Work email</label><input class="inp" type="email" id="email" placeholder="jane@company.com"><p class="error" id="err-email">Enter a valid work email</p></div>
+    <div class="field"><label>Company name</label><input class="inp" type="text" id="lead-co" placeholder="Acme Manufacturing"><p class="error" id="err-co">Required</p></div>
+    <button class="btn-primary" id="btn-gate">Send me the full report →</button>
+    <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:10px">No spam. Unsubscribe anytime.</p>
+  </div>
+</div>
+
+<!-- STEP 3: Full Results -->
+<div id="step3" class="hidden">
+
+  <div class="results-header">
+    <h2 id="results-name">Your ROI Report</h2>
+    <p>Here's the full breakdown of your projected savings with Axya</p>
+  </div>
+
+  <!-- ROI Hero -->
+  <div class="roi-summary">
+    <div class="s-label">Total annual value delivered</div>
+    <div class="s-amount" id="r-total">—</div>
+    <div class="s-sub">per year for your first business unit</div>
+    <div class="roi-cols">
+      <div class="roi-col"><div class="cl">ROI multiple</div><div class="cv" id="r-roi">—</div></div>
+      <div class="roi-col"><div class="cl">Payback period</div><div class="cv" id="r-payback">—</div></div>
+      <div class="roi-col"><div class="cl">Hours saved / yr</div><div class="cv" id="r-hours">—</div></div>
+    </div>
+  </div>
+
+  <!-- Benefit breakdowns -->
+  <div id="benefits-detail"></div>
+
+  <!-- Benchmarks -->
+  <div class="bench-card">
+    <h3>How you compare to similar companies</h3>
+    <div class="bench-row">
+      <div class="bench-top"><span class="bl">Buyer time on admin tasks (industry avg)</span><span class="bv">60%</span></div>
+      <div class="bench-track"><div class="bench-fill blue" style="width:60%"></div></div>
+    </div>
+    <div class="bench-row">
+      <div class="bench-top"><span class="bl">Buyer time on admin tasks (with Axya)</span><span class="bv">30%</span></div>
+      <div class="bench-track"><div class="bench-fill green" style="width:30%"></div></div>
+    </div>
+    <div class="bench-row">
+      <div class="bench-top"><span class="bl">Late orders (industry avg)</span><span class="bv" id="bench-late-avg">~10%</span></div>
+      <div class="bench-track"><div class="bench-fill amber" id="bench-late-bar" style="width:10%"></div></div>
+    </div>
+    <div class="bench-row" style="margin-bottom:0">
+      <div class="bench-top"><span class="bl">Late orders (with Axya)</span><span class="bv" id="bench-late-axya">~3%</span></div>
+      <div class="bench-track"><div class="bench-fill green" id="bench-axya-bar" style="width:3%"></div></div>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="tip-card">
+    <h3>Tips to improve your procurement operations</h3>
+    <div class="tip-item"><div class="tip-num">1</div><div class="tip-text"><div class="tt">Centralise order tracking in one platform</div><div class="ts">Buyers spend up to 40% of their day chasing order status across emails, ERP screens, and supplier portals. A single source of truth cuts this dramatically.</div></div></div>
+    <div class="tip-item"><div class="tip-num">2</div><div class="tip-text"><div class="tt">Set up proactive late-order alerts</div><div class="ts">Don't wait for production to flag a missing part. Automated supplier confirmations and deviation alerts let you act weeks earlier.</div></div></div>
+    <div class="tip-item"><div class="tip-num">3</div><div class="tip-text"><div class="tt">Give non-buyers self-serve visibility</div><div class="ts">Every time a project manager or ops lead asks a buyer for a status update, it costs 15–30 minutes. Dashboards and AI chatbots eliminate this interrupt.</div></div></div>
+    <div class="tip-item"><div class="tip-num">4</div><div class="tip-text"><div class="tt">Start measuring supplier on-time performance</div><div class="ts">You can't improve what you don't measure. A structured supplier scorecard reduces late deliveries by an average of 40% within 6 months.</div></div></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card">
+    <h3>Ready to capture this value?</h3>
+    <p>Book a 30-minute call with an Axya procurement specialist. We'll walk through your numbers and show you exactly how to get there.</p>
+    <button class="btn-cta" onclick="alert('Booking link goes here — connect your Calendly or HubSpot meeting link')">Book a free demo call</button>
+    <button class="btn-outline" onclick="window.print()">Download PDF</button>
+  </div>
+
+  <div class="disclaimer">
+    Results are estimates based on Axya customer benchmarks and industry data. Actual results may vary based on implementation, team adoption, and company-specific factors. Report sent to <span id="r-email">—</span>.
+  </div>
+</div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const fmtK=n=>n>=1000?'$'+Math.round(n/1000)+'K':'$'+Math.round(n);
+const fmt=n=>'$'+Math.round(n).toLocaleString();
+const fmtN=n=>Math.round(n).toLocaleString();
+
+// Sliders
+function sl(id,outId,fmt){
+  const el=$(id),out=$(outId);
+  const u=()=>out.textContent=fmt(+el.value);
+  el.addEventListener('input',u);u();
+}
+sl('buyers','buyers-out',v=>v+' '+(v===1?'person':'people'));
+sl('salary','salary-out',v=>'$'+v.toLocaleString());
+sl('po_lines','polines-out',v=>v.toLocaleString());
+
+function computeROI(){
+  const buyers=+$('buyers').value;
+  const salary=+$('salary').value;
+  const lines=+$('po_lines').value;
+
+  const b1_base=buyers*salary*0.5;
+  const b1_lo=b1_base*0.75, b1_hi=b1_base*1.0;
+
+  const avgLineVal=850;
+  const lateCost=lines*0.10*avgLineVal*0.20;
+  const b2_lo=lateCost*0.67*0.5, b2_hi=lateCost*0.67*1.0;
+
+  const nonBuyers=Math.round(buyers*4);
+  const hrRate=salary/2080;
+  const b3_base=nonBuyers*1*52*hrRate*0.85;
+  const b3_lo=b3_base*0.5, b3_hi=b3_base*1.0;
+
+  const b4_base=45000;
+  const b4_lo=b4_base*0.5, b4_hi=b4_base*1.0;
+
+  const totalLo=b1_lo+b2_lo+b3_lo+b4_lo;
+  const totalHi=b1_hi+b2_hi+b3_hi+b4_hi;
+  const planCost=36000;
+  const roiLo=(totalLo/planCost), roiHi=(totalHi/planCost);
+  const paybackMo=Math.round((planCost/((totalLo+totalHi)/2))*12);
+  const hrsSaved=Math.round(buyers*2080*0.5);
+
+  return{totalLo,totalHi,roiLo,roiHi,paybackMo,hrsSaved,planCost,
+    b1_lo,b1_hi,b2_lo,b2_hi,b3_lo,b3_hi,b4_lo,b4_hi,nonBuyers,hrRate,lines};
+}
+
+$('btn-calc').addEventListener('click',()=>{
+  const r=computeROI();
+  $('teaser-total').textContent=fmtK(r.totalLo)+' – '+fmtK(r.totalHi);
+  $('t-roi').textContent=r.roiLo.toFixed(1)+'x – '+r.roiHi.toFixed(1)+'x';
+  $('t-payback').textContent=r.paybackMo<=1?'<1 mo':r.paybackMo+' mo';
+  $('t-hours').textContent=fmtN(r.hrsSaved);
+  setStep(2);
+});
+
+function validEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+function showErr(id,v){$(id).style.display=v?'block':'none';}
+
+$('btn-gate').addEventListener('click',()=>{
+  let ok=true;
+  if(!$('fname').value.trim()){showErr('err-fname',true);ok=false;}else showErr('err-fname',false);
+  if(!$('lname').value.trim()){showErr('err-lname',true);ok=false;}else showErr('err-lname',false);
+  if(!validEmail($('email').value)){showErr('err-email',true);ok=false;}else showErr('err-email',false);
+  if(!$('lead-co').value.trim()){showErr('err-co',true);ok=false;}else showErr('err-co',false);
+  if(!ok)return;
+
+  const r=computeROI();
+  const name=$('fname').value.trim();
+
+  $('results-name').textContent=name+"'s ROI Report";
+  $('r-email').textContent=$('email').value.trim();
+  $('r-total').textContent=fmt(r.totalLo)+' – '+fmt(r.totalHi);
+  $('r-roi').textContent=r.roiLo.toFixed(1)+'x – '+r.roiHi.toFixed(1)+'x';
+  $('r-payback').textContent=r.paybackMo<=1?'< 1 month':r.paybackMo+' months';
+  $('r-hours').textContent=fmtN(r.hrsSaved);
+
+  const benefits=[
+    {title:'1. Increased buyer productivity',sub:'Time reallocated to value-added tasks',rows:[
+      ['Buyers on your team', $('buyers').value+' people'],
+      ['Avg. buyer salary', fmt(+$('salary').value)],
+      ['Productivity gain (Axya index)', '2x (50% time saved)'],
+      ['Hours saved per year', fmtN(r.hrsSaved)+' hrs'],
+    ],lo:r.b1_lo,hi:r.b1_hi},
+    {title:'2. Reduction in unexpected late orders',sub:'More visibility and proactive intelligence',rows:[
+      ['PO lines per year', fmtN(r.lines)],
+      ['Avg. late order rate (industry)', '10%'],
+      ['Reduction in late orders (Axya index)', '67%'],
+      ['Cost per late line (20% of line value)', '$170'],
+    ],lo:r.b2_lo,hi:r.b2_hi},
+    {title:'3. Cross-departmental efficiency',sub:'Fewer meetings, emails, and status requests',rows:[
+      ['Non-buyers engaging with procurement', r.nonBuyers+' people'],
+      ['Sync time saved per week', '~85% reduction'],
+      ['Hourly labour rate', '$'+Math.round(r.hrRate)+'/hr'],
+    ],lo:r.b3_lo,hi:r.b3_hi},
+    {title:'4. BI & data infrastructure savings',sub:'Structured supply chain data without custom builds',rows:[
+      ['Amortized DB & BI build cost (industry avg)', '$45,000/yr'],
+      ['Replaced by Axya built-in analytics', 'Full replacement'],
+    ],lo:r.b4_lo,hi:r.b4_hi},
+  ];
+
+  $('benefits-detail').innerHTML=benefits.map(b=>`
+    <div class="benefit-card">
+      <div class="bc-header"><div class="bt">${b.title}</div><div class="bs">${b.sub}</div></div>
+      ${b.rows.map(([l,v])=>`<div class="bc-row"><span class="rl">${l}</span><span class="rv">${v}</span></div>`).join('')}
+      <div class="bc-footer"><span class="fl">Value delivered</span><span class="fv">${fmt(b.lo)} – ${fmt(b.hi)}</span></div>
+    </div>`).join('');
+
+  setStep(3);
+});
+
+function setStep(n){
+  $('step1').classList.toggle('hidden',n!==1);
+  $('step2').classList.toggle('hidden',n!==2);
+  $('step3').classList.toggle('hidden',n!==3);
+  [1,2,3].forEach(i=>{
+    const done=i<n,active=i===n;
+    $('sc'+i).className='step-circle'+(done?' done':active?' active':'');
+    $('sl'+i).className='step-label'+(done?' done':active?' active':'');
+    if(i<3)$('sline'+i).className='step-line'+(i<n?' done':'');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
