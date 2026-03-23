@@ -392,28 +392,26 @@ function initHubSpotForm() {
     setTimeout(initHubSpotForm, 100);
     return;
   }
-  hbspt.forms.create({
-  portalId: "5408365",
-  formId: "61d0077b-e31a-4c56-bccb-c48207498154",
-  region: "na1",
-  target: "#hs-form-target",
-  onFormSubmitted: function(form, data) {
-    var r = pendingROI || computeROI();
-    // Extract submitted values from the form data object
-    var fields = {};
-    if (data && data.submissionValues) {
-      fields = data.submissionValues;
-    } else {
-      // Fallback: read directly from the form inputs
-      var inputs = document.querySelectorAll('#hs-form-target input');
-      inputs.forEach(function(input){
-        if(input.name) fields[input.name] = input.value;
-      });
+
+  // Watch for HubSpot's success message in the DOM — more reliable than onFormSubmitted
+  var observer = new MutationObserver(function(mutations) {
+    var submitted = document.querySelector('#hs-form-target .submitted-message');
+    if (submitted) {
+      observer.disconnect();
+      var r = pendingROI || computeROI();
+      // Grab name from the form before HubSpot clears it
+      var firstnameInput = document.querySelector('#hs-form-target input[name="firstname"]');
+      var firstname = firstnameInput ? firstnameInput.value : '';
+      showResults(r, firstname);
     }
-    var firstname = fields.firstname || '';
-    // Show the results
-    showResults(r, firstname);
-  }
+  });
+  observer.observe(document.getElementById('hs-form-target'), { childList: true, subtree: true });
+
+  hbspt.forms.create({
+    portalId: "5408365",
+    formId: "61d0077b-e31a-4c56-bccb-c48207498154",
+    region: "na1",
+    target: "#hs-form-target"
   });
 }
 initHubSpotForm();
