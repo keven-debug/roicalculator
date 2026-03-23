@@ -359,7 +359,8 @@ function validEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
 function showErr(id,v){$(id).style.display=v?'block':'none';}
 
 function fillAndSubmitHubSpot(firstname, lastname, email, company) {
-  var form = hsFormEl || document.querySelector('#hs-form-target form');
+  var hsTarget = hsFormEl || document.querySelector('#hs-form-target form');
+  var form = hsTarget ? (hsTarget.tagName === 'FORM' ? hsTarget : hsTarget.closest('form')) : null;
   if (!form) { console.warn('HS form not found'); return; }
 
   function setVal(name, value) {
