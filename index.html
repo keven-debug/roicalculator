@@ -412,7 +412,49 @@ $('btn-gate').addEventListener('click',()=>{
   if(!ok)return;
 
   const r=computeROI();
+
+  // Submit to HubSpot
+  fetch('https://api.hsforms.com/submissions/v3/integration/submit/5408365/61d0077b-e31a-4c56-bccb-c48207498154',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      fields:[
+        {name:'firstname',value:$('fname').value.trim()},
+        {name:'lastname',value:$('lname').value.trim()},
+        {name:'email',value:$('email').value.trim()},
+        {name:'company',value:$('lead-co').value.trim()},
+        {name:'roi_total_low',value:Math.round(r.totalLo)},
+        {name:'roi_total_high',value:Math.round(r.totalHi)},
+        {name:'roi_multiple',value:r.roiLo.toFixed(1)+'-'+r.roiHi.toFixed(1)},
+        {name:'roi_payback_months',value:r.paybackMo},
+        {name:'roi_hours_saved',value:Math.round(r.hrsSaved)},
+      ],
+      context:{pageUri:window.location.href,pageName:'Axya ROI Calculator'}
+    })
+  }).catch(err=>console.error('HubSpot submission error:',err));
+
+  const r=computeROI();
   const name=$('fname').value.trim();
+
+  // Submit to HubSpot Forms API
+  fetch('https://api.hsforms.com/submissions/v3/integration/submit/5408365/61d0077b-e31a-4c56-bccb-c48207498154', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      fields:[
+        {name:'firstname', value:$('fname').value.trim()},
+        {name:'lastname',  value:$('lname').value.trim()},
+        {name:'email',     value:$('email').value.trim()},
+        {name:'company',   value:$('lead-co').value.trim()},
+        {name:'roi_total_low',      value:String(Math.round(r.totalLo))},
+        {name:'roi_total_high',     value:String(Math.round(r.totalHi))},
+        {name:'roi_multiple',       value:r.roiLo.toFixed(1)+'x – '+r.roiHi.toFixed(1)+'x'},
+        {name:'roi_payback_months', value:String(r.paybackMo)},
+        {name:'roi_hours_saved',    value:String(r.hrsSaved)},
+      ],
+      context:{pageUri:window.location.href, pageName:'Axya ROI Calculator'}
+    })
+  }).catch(()=>{}); // fail silently — user still sees results
 
   $('results-name').textContent=name+"'s ROI Report";
   $('r-email').textContent=$('email').value.trim();
