@@ -129,7 +129,7 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
   <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-label" id="sl3">Full report</div></div>
 </div>
 
-<!-- Hidden HubSpot form — submits in background -->
+<!-- Hidden HubSpot form -->
 <div id="hs-form-wrapper">
   <div id="hs-form-target"></div>
 </div>
@@ -290,7 +290,6 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1
 
 </div>
 
-<!-- HubSpot embed script -->
 <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
 <script>
 function $(id){return document.getElementById(id);}
@@ -298,14 +297,17 @@ function fmtK(n){return n>=1000?'$'+Math.round(n/1000)+'K':'$'+Math.round(n);}
 function fmt(n){return '$'+Math.round(n).toLocaleString();}
 function fmtN(n){return Math.round(n).toLocaleString();}
 
-// Init hidden HubSpot form
+// Store HubSpot form reference once it's ready
+var hsFormEl = null;
+
 hbspt.forms.create({
   portalId: "5408365",
   formId: "61d0077b-e31a-4c56-bccb-c48207498154",
   region: "na1",
   target: "#hs-form-target",
-  onFormReady: function(){
-    console.log('HubSpot form ready');
+  onFormReady: function(form) {
+    hsFormEl = form[0] || form; // jQuery or DOM element
+    console.log('HubSpot form ready', hsFormEl);
   }
 });
 
@@ -356,6 +358,32 @@ $('btn-calc').addEventListener('click',function(){
 function validEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
 function showErr(id,v){$(id).style.display=v?'block':'none';}
 
+function fillAndSubmitHubSpot(firstname, lastname, email, company) {
+  var form = hsFormEl || document.querySelector('#hs-form-target form');
+  if (!form) { console.warn('HS form not found'); return; }
+
+  function setVal(name, value) {
+    var input = form.querySelector('[name="' + name + '"]');
+    if (!input) return;
+    var nativeSet = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    nativeSet.call(input, value);
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+
+  setVal('firstname', firstname);
+  setVal('lastname', lastname);
+  setVal('email', email);
+  setVal('company', company);
+
+  // Give React a tick to register changes, then submit
+  setTimeout(function() {
+    var btn = form.querySelector('[type="submit"]');
+    if (btn) { btn.click(); }
+    else { form.submit(); }
+  }, 100);
+}
+
 $('btn-gate').addEventListener('click',function(){
   var ok=true;
   if(!$('fname').value.trim()){showErr('err-fname',true);ok=false;}else showErr('err-fname',false);
@@ -367,34 +395,15 @@ $('btn-gate').addEventListener('click',function(){
   var r=computeROI();
   var name=$('fname').value.trim();
 
-  // Fill hidden HubSpot form fields and submit
-  var hsForm=document.querySelector('#hs-form-target form');
-  if(hsForm){
-    function fillField(name,value){
-      var input=hsForm.querySelector('[name="'+name+'"]');
-      if(input){
-        input.value=value;
-        // Trigger React/HubSpot change events
-        var evt=new Event('input',{bubbles:true});
-        input.dispatchEvent(evt);
-        var evt2=new Event('change',{bubbles:true});
-        input.dispatchEvent(evt2);
-      }
-    }
-    fillField('firstname',$('fname').value.trim());
-    fillField('lastname',$('lname').value.trim());
-    fillField('email',$('email').value.trim());
-    fillField('company',$('lead-co').value.trim());
+  // Submit to HubSpot
+  fillAndSubmitHubSpot(
+    $('fname').value.trim(),
+    $('lname').value.trim(),
+    $('email').value.trim(),
+    $('lead-co').value.trim()
+  );
 
-    // Submit the hidden form
-    var submitBtn=hsForm.querySelector('[type="submit"]');
-    if(submitBtn){submitBtn.click();}
-    else{hsForm.submit();}
-  } else {
-    console.warn('HubSpot form not ready yet');
-  }
-
-  // Always show step 3 regardless
+  // Always show step 3
   $('results-name').textContent=name+"'s ROI Report";
   $('r-email').textContent=$('email').value.trim();
   $('r-total').textContent=fmt(r.totalLo)+' - '+fmt(r.totalHi);
