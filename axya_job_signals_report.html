@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Post Signals – Last 7 Days</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --text: #1a1917;
+    --muted: #6b6960;
+    --accent: #1a4fa8;
+    --accent-light: #e8eff9;
+    --accent-mid: #3b7dd8;
+    --bar: #1a4fa8;
+    --badge-bg: #e8eff9;
+    --badge-text: #1a4fa8;
+    --link: #1a4fa8;
+    --row-hover: #f7f6f3;
+    --green: #1a6e3c;
+    --green-bg: #e6f4ec;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .header-left p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    display: block;
+  }
+
+  /* Metric grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .metric-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+  }
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Section headers */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* Bar chart */
+  .bars { margin-bottom: 20px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .bar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 46px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .bar-track {
+    flex: 1;
+    height: 20px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--bar);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding-left: 7px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bar-fill span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+  .bar-fill.zero {
+    background: transparent;
+    padding-left: 0;
+  }
+  .bar-fill.zero span { color: var(--muted); padding-left: 4px; }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  thead th {
+    background: var(--surface2);
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--row-hover); }
+
+  a.co-link {
+    color: var(--link);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  a.co-link:hover { text-decoration: underline; }
+
+  .badge {
+    display: inline-block;
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .date-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+  }
+  .footer a {
+    color: var(--link);
+    text-decoration: none;
+  }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Job Post Signals</h1>
+    <p>Procurement roles · Last 7 days · s_open_role_date_posted</p>
+  </div>
+  <span class="pill" id="updated-badge">Live</span>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-label">Companies signaled</div>
+    <div class="metric-value">118</div>
+    <div class="metric-sub">Unique accounts</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Open roles</div>
+    <div class="metric-value">161</div>
+    <div class="metric-sub">In procurement</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Avg roles / co.</div>
+    <div class="metric-value">1.4</div>
+    <div class="metric-sub">Per signaled account</div>
+  </div>
+</div>
+
+<p class="section-title">Daily signal volume</p>
+<div class="bars" id="bar-chart"></div>
+
+<p class="section-title">Top accounts by role count</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:42%">Company</th>
+        <th style="width:22%">Latest post</th>
+        <th style="width:36%">Open roles</th>
+      </tr>
+    </thead>
+    <tbody id="accounts-table"></tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Showing top 15 of 118 accounts ·
+  <a href="https://app.hubspot.com/contacts/5408365/objectLists/2567/filters" target="_blank">
+    View full list in HubSpot ↗
+  </a>
+</div>
+
+<script>
+const dateCounts = [
+  { label: "Mar 27", count: 1 },
+  { label: "Mar 26", count: 18 },
+  { label: "Mar 25", count: 16 },
+  { label: "Mar 24", count: 17 },
+  { label: "Mar 23", count: 19 },
+  { label: "Mar 22", count: 2 },
+  { label: "Mar 21", count: 8 },
+  { label: "Mar 20", count: 23 },
+  { label: "Mar 19", count: 2 },
+  { label: "Mar 18", count: 9 },
+  { label: "Mar 17", count: 8 },
+  { label: "Mar 16", count: 4 },
+  { label: "Mar 13", count: 3 },
+];
+
+const accounts = [
+  { name: "SpaceX",                    date: "Mar 20", roles: 8,  id: "8447485192" },
+  { name: "Stellantis",                date: "Mar 23", roles: 7,  id: "12069694997" },
+  { name: "Georgia-Pacific",           date: "Mar 25", roles: 5,  id: "32847200000" },
+  { name: "RTX",                       date: "Mar 25", roles: 5,  id: "7072562988" },
+  { name: "GE Aerospace",              date: "Mar 23", roles: 5,  id: "21162375071" },
+  { name: "Pratt & Whitney",           date: "Mar 24", roles: 4,  id: "6191412049" },
+  { name: "General Motors",            date: "Mar 24", roles: 4,  id: "4979469371" },
+  { name: "Honeywell",                 date: "Mar 20", roles: 4,  id: "8447501607" },
+  { name: "CNH Industrial",            date: "Mar 24", roles: 3,  id: "30451171423" },
+  { name: "Collins Aerospace",         date: "Mar 20", roles: 3,  id: "9640297221" },
+  { name: "Danfoss",                   date: "Mar 20", roles: 3,  id: "23154908826" },
+  { name: "Magna International",       date: "Mar 21", roles: 3,  id: "4979432109" },
+  { name: "Graco",                     date: "Mar 20", roles: 2,  id: "19220812867" },
+  { name: "GEA",                       date: "Mar 25", roles: 2,  id: "4203619187" },
+  { name: "Husky",                     date: "Mar 26", roles: 2,  id: "5868552609" },
+];
+
+// Render bars
+const maxCount = Math.max(...dateCounts.map(d => d.count));
+const barEl = document.getElementById('bar-chart');
+dateCounts.forEach(({ label, count }) => {
+  const pct = Math.round((count / maxCount) * 100);
+  barEl.innerHTML += `
+    <div class="bar-row">
+      <span class="bar-label">${label}</span>
+      <div class="bar-track">
+        <div class="bar-fill${count === 0 ? ' zero' : ''}" style="width:${Math.max(pct, 3)}%">
+          <span>${count}</span>
+        </div>
+      </div>
+    </div>`;
+});
+
+// Render table
+const tbody = document.getElementById('accounts-table');
+accounts.forEach(({ name, date, roles, id }) => {
+  const url = `https://app.hubspot.com/contacts/5408365/record/0-2/${id}`;
+  tbody.innerHTML += `
+    <tr>
+      <td><a class="co-link" href="${url}" target="_blank">${name}</a></td>
+      <td class="date-cell">${date}</td>
+      <td><span class="badge">${roles}</span> role${roles > 1 ? 's' : ''}</td>
+    </tr>`;
+});
+
+// Set last updated
+const now = new Date();
+const fmt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+document.getElementById('updated-badge').title = `As of ${fmt}`;
+</script>
+</body>
+</html>
