@@ -111,6 +111,8 @@ details[open] .chev{transform:rotate(-135deg)}
 .prove ul{margin:10px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;color:#D6E4FA;font-size:15px}
 .prove li:before{content:"•";color:#8DBEFF;margin-right:8px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.top{position:static;background:none;backdrop-filter:none;border-bottom:0}
+.top img,.top .cur{display:none}
 .toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;z-index:20;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .gate{max-width:560px;margin:28px auto 0}
@@ -166,7 +168,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:15}
 
 <script>
 const DEFAULTS = {
-  step:0, cur:'CAD',
+  step:0, cur:'USD',
   buyers:8, cost:85000, pos:16000, lpp:3, latePct:10, spend:50000000, quote:0,
   // Editable on the results page. Keys listed in MEASURED come from the prod replica (2026-11-12: POs sent 30-120 days earlier,
   // 44 customers, 33,868 POs, 98,622 lines; classification jobs and thread events over 90 days). The rest are assumptions.
