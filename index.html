@@ -1,428 +1,799 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Axya ROI Calculator</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Axya Value Estimator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;color:#0f172a;background:#f1f5f9;min-height:100vh}
-.wrap{max-width:640px;margin:0 auto;padding:32px 16px 80px}
-.brand{text-align:center;margin-bottom:28px}
-.brand-logo{font-size:28px;font-weight:900;color:#2563eb;letter-spacing:-1px}
-.brand-logo span{color:#0f172a}
-.hero{text-align:center;margin-bottom:32px}
-.hero h1{font-size:26px;font-weight:800;line-height:1.25;margin-bottom:10px}
-.hero p{font-size:15px;color:#475569;line-height:1.6}
-.badge{display:inline-block;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:14px;letter-spacing:.03em;text-transform:uppercase}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px;margin-bottom:16px}
-.card-title{font-size:16px;font-weight:700;margin-bottom:6px}
-.card-sub{font-size:13px;color:#64748b;margin-bottom:22px;line-height:1.5}
-.steps-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px}
-.step-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:120px}
-.step-circle{width:32px;height:32px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#94a3b8;background:#fff;transition:all .3s;position:relative;z-index:1}
-.step-circle.active{border-color:#2563eb;color:#2563eb}
-.step-circle.done{border-color:#16a34a;background:#16a34a;color:#fff}
-.step-label{font-size:11px;color:#94a3b8;font-weight:600;text-align:center;text-transform:uppercase;letter-spacing:.03em}
-.step-label.active{color:#2563eb}
-.step-label.done{color:#16a34a}
-.step-line{flex:1;height:2px;background:#e2e8f0;margin-top:-22px;max-width:60px}
-.step-line.done{background:#16a34a}
-.field{margin-bottom:18px}
-.field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
-.field .hint{font-size:11px;color:#94a3b8;margin-top:4px}
-.inp{width:100%;height:42px;border:1.5px solid #e2e8f0;border-radius:8px;padding:0 14px;font-size:15px;color:#0f172a;background:#fff;outline:none;transition:border-color .15s}
-.inp:focus{border-color:#2563eb}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:480px){.grid2{grid-template-columns:1fr}}
-.slider-row{display:flex;align-items:center;gap:10px;margin-top:6px}
-.slider-row input[type=range]{flex:1;height:4px;accent-color:#2563eb}
-.slider-val{font-size:14px;font-weight:700;min-width:70px;text-align:right;color:#0f172a}
-.btn-primary{width:100%;height:48px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:8px}
-.btn-primary:hover{background:#1d4ed8}
-.teaser-box{background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);border:1.5px solid #bfdbfe;border-radius:14px;padding:24px;margin-bottom:16px;text-align:center}
-.teaser-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#2563eb;margin-bottom:8px}
-.teaser-amount{font-size:42px;font-weight:900;color:#16a34a;letter-spacing:-1px;margin-bottom:4px}
-.teaser-sub{font-size:13px;color:#475569;margin-bottom:16px}
-.teaser-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.t-metric{background:#fff;border-radius:10px;padding:14px;border:1px solid #e2e8f0}
-.t-metric .lbl{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
-.t-metric .val{font-size:20px;font-weight:800;color:#0f172a}
-.locked-preview{position:relative;margin-bottom:20px}
-.blur-content{filter:blur(5px);pointer-events:none;user-select:none}
-.lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,.7);border-radius:10px;gap:8px}
-.lock-icon{font-size:28px}
-.lock-msg{font-size:14px;font-weight:700;color:#0f172a;text-align:center}
-.lock-sub{font-size:12px;color:#475569;text-align:center}
-.blurred-rows{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px}
-.blurred-row{height:14px;background:#e2e8f0;border-radius:4px;margin-bottom:10px}
-.blurred-row:nth-child(2){width:80%}
-.blurred-row:nth-child(3){width:90%}
-.blurred-row:nth-child(4){width:70%}
-.blurred-row:last-child{margin-bottom:0;width:85%}
-.gate-title{font-size:18px;font-weight:800;margin-bottom:6px}
-.gate-sub{font-size:13px;color:#475569;margin-bottom:20px;line-height:1.6}
-/* HubSpot form overrides */
-#hs-form-target .hs-form-field label{font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block}
-#hs-form-target .hs-input{width:100%!important;height:42px;border:1.5px solid #e2e8f0;border-radius:8px;padding:0 14px;font-size:15px;color:#0f172a;background:#fff;outline:none}
-#hs-form-target .hs-input:focus{border-color:#2563eb}
-#hs-form-target .hs-form-field{margin-bottom:18px}
-#hs-form-target .hs-button{width:100%;height:48px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
-#hs-form-target .hs-button:hover{background:#1d4ed8}
-#hs-form-target .hs-error-msgs{font-size:12px;color:#dc2626;margin-top:4px;list-style:none;padding:0}
-#hs-form-target .submitted-message{font-size:14px;color:#16a34a;font-weight:600;text-align:center;padding:12px 0}
-#hs-form-target .legal-consent-container{font-size:11px;color:#94a3b8;margin-top:8px}
-#hs-form-target fieldset{border:none;padding:0;max-width:100%!important}
-#hs-form-target .form-columns-2 .hs-form-field{width:50%;display:inline-block;vertical-align:top;padding-right:8px}
-#hs-form-target .form-columns-2 .hs-form-field:last-child{padding-right:0;padding-left:8px}
-@media(max-width:480px){#hs-form-target .form-columns-2 .hs-form-field{width:100%;padding:0}}
-.results-header{text-align:center;padding:20px 0 8px}
-.results-header h2{font-size:22px;font-weight:800;margin-bottom:6px}
-.results-header p{font-size:14px;color:#475569}
-.roi-summary{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:14px;padding:24px;margin-bottom:16px;text-align:center}
-.roi-summary .s-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.8;margin-bottom:8px}
-.roi-summary .s-amount{font-size:48px;font-weight:900;letter-spacing:-2px;margin-bottom:4px}
-.roi-summary .s-sub{font-size:13px;opacity:.8;margin-bottom:20px}
-.roi-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.roi-col{background:rgba(255,255,255,.15);border-radius:10px;padding:14px;text-align:center}
-.roi-col .cl{font-size:11px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
-.roi-col .cv{font-size:18px;font-weight:800}
-.benefit-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:12px}
-.bc-header{background:#2563eb;color:#fff;padding:10px 16px}
-.bc-header .bt{font-weight:700;font-size:14px}
-.bc-header .bs{font-size:12px;opacity:.8;margin-top:2px}
-.bc-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid #f1f5f9;font-size:13px}
-.bc-row:last-child{border-bottom:none}
-.bc-row .rl{color:#475569}
-.bc-row .rv{font-weight:700;color:#0f172a}
-.bc-footer{background:#f0fdf4;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-.bc-footer .fl{font-size:12px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.04em}
-.bc-footer .fv{font-size:16px;font-weight:800;color:#16a34a}
-.bench-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:12px}
-.bench-card h3{font-size:14px;font-weight:700;margin-bottom:14px;color:#0f172a}
-.bench-row{margin-bottom:12px}
-.bench-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
-.bench-top .bl{color:#475569;font-weight:600}
-.bench-top .bv{font-weight:700;color:#0f172a}
-.bench-track{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
-.bench-fill{height:100%;border-radius:4px}
-.bench-fill.blue{background:#2563eb}
-.bench-fill.green{background:#16a34a}
-.bench-fill.amber{background:#f59e0b}
-.tip-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:12px}
-.tip-card h3{font-size:14px;font-weight:700;margin-bottom:14px}
-.tip-item{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
-.tip-item:last-child{margin-bottom:0}
-.tip-num{width:26px;height:26px;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.tip-text .tt{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:2px}
-.tip-text .ts{font-size:12px;color:#475569;line-height:1.5}
-.cta-card{background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:1px solid #bbf7d0;border-radius:14px;padding:24px;text-align:center;margin-bottom:16px}
-.cta-card h3{font-size:18px;font-weight:800;margin-bottom:8px}
-.cta-card p{font-size:13px;color:#475569;margin-bottom:20px;line-height:1.6}
-.btn-cta{display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:background .15s}
-.btn-cta:hover{background:#1d4ed8}
-.btn-outline{display:inline-block;background:#fff;color:#2563eb;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid #2563eb;cursor:pointer;margin-left:10px}
-.disclaimer{font-size:11px;color:#94a3b8;text-align:center;margin-top:20px;line-height:1.6}
-.hidden{display:none}
+:root{
+  --ink:#0B1424; --ink2:#4B5768; --ink3:#6B7686; --line:#E7EAF0; --bg:#F8F9FC; --card:#fff;
+  --blue:#2682FD; --blue2:#1866DB; --navy:#061736; --pill:#F2F7FF;
+  --c1:#2682FD; --c2:#6C5CE7; --c3:#12B5A6; --c4:#F59E0B; --c5:#E5484D;
+  --shadow:0 1px 2px rgba(11,20,36,.04),0 8px 28px rgba(11,20,36,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:16px/1.5 "Google Sans Flex","Google Sans",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(248,249,252,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1080px;margin:0 auto;padding-block:12px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:16px}
+.top img{height:26px;display:block}
+.dots{display:flex;gap:6px;margin-left:auto;align-items:center}
+.dots i{width:28px;height:4px;border-radius:4px;background:var(--line);transition:background .3s}
+.dots i.on{background:var(--blue)}
+.cur{border:1px solid var(--line);background:#fff;border-radius:999px;padding:2px;display:flex}
+.cur button{border:0;background:none;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--ink3)}
+.cur button.on{background:var(--ink);color:#fff}
+main{max-width:1080px;margin:0 auto;padding-block:28px 80px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.grid>*,.welcome>*{min-width:0}
+.fade{animation:in .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes in{from{transform:translateY(12px)}to{transform:none}}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue2)}
+h1{font-size:clamp(30px,5vw,50px);line-height:1.08;font-weight:500;letter-spacing:-.02em;margin:10px 0 14px}
+h2{font-size:clamp(24px,3.4vw,32px);line-height:1.15;font-weight:500;letter-spacing:-.015em;margin:8px 0 6px}
+p.lead{font-size:18px;color:var(--ink2);max-width:620px;margin:0 0 26px}
+.btn{border:0;border-radius:12px;padding:14px 22px;font-weight:600;background:var(--blue);color:#fff;transition:transform .12s,background .2s,box-shadow .2s;box-shadow:0 6px 18px rgba(38,130,253,.3)}
+.btn:hover{background:var(--blue2);transform:translateY(-1px)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn.ghost:hover{background:var(--pill)}
+.btn.sm{padding:9px 14px;border-radius:10px;font-size:14px}
+.welcome{display:grid;grid-template-columns:1.15fr 1fr;gap:36px;align-items:center;padding-top:28px}
+.how{background:var(--navy);color:#fff;border-radius:20px;padding:26px;box-shadow:var(--shadow)}
+.how h3{margin:0 0 14px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#8DBEFF}
+.how li{margin:0 0 14px;padding-left:4px;color:#D6E4FA}
+.how li b{color:#fff;font-weight:600}
+.how ol{margin:0;padding-left:20px}
+.meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-size:14px;color:var(--ink3)}
+.grid{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:var(--shadow)}
+.field{padding:18px 0;border-top:1px solid var(--line)}
+.field:first-of-type{border-top:0;padding-top:8px}
+.field .row{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+.field label{font-weight:600;display:block}
+.field small{color:var(--ink3);font-size:13.5px;display:block}
+.num{width:150px;flex:none;text-align:right;font:inherit;font-size:20px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fff;font-variant-numeric:tabular-nums}
+.num:focus,.asm:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:transparent}
+input[type=range]{width:100%;margin:16px 0 0;accent-color:var(--blue);height:6px}
+.nav{display:flex;justify-content:space-between;margin-top:22px}
+.think{background:linear-gradient(180deg,#F2F7FF,#fff);border:1px solid #D6E6FF;border-radius:18px;padding:22px;position:sticky;top:76px}
+.think h3{margin:0 0 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue2);display:flex;align-items:center;gap:8px}
+.think h3:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 0 rgba(38,130,253,.5);animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(38,130,253,0)}100%{box-shadow:0 0 0 0 rgba(38,130,253,0)}}
+.think p{margin:0 0 12px;color:var(--ink2);font-size:15px}
+.think b{color:var(--ink);font-variant-numeric:tabular-nums}
+.think .why{font-size:13px;color:var(--ink3);border-top:1px dashed #C9DCFB;padding-top:10px;margin:14px 0 0}
+.calc{max-width:560px;margin:60px auto;text-align:center}
+.calc ul{list-style:none;padding:0;margin:26px 0 0;text-align:left}
+.calc li{display:flex;gap:12px;align-items:center;padding:12px 16px;margin-bottom:8px;background:#fff;border:1px solid var(--line);border-radius:12px;opacity:0;transform:translateY(8px);transition:.35s}
+.calc li.on{opacity:1;transform:none}
+.calc li span{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.tick{width:20px;height:20px;border-radius:50%;background:var(--blue);flex:none;position:relative}
+.tick:after{content:"";position:absolute;left:6px;top:5px;width:6px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(40deg) translate(-1px,-1px)}
+.big{background:var(--navy);color:#fff;border-radius:22px;padding:34px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.big:after{content:"";position:absolute;right:-120px;top:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(closest-side,rgba(38,130,253,.55),transparent)}
+.big .eyebrow{color:#8DBEFF}
+.big .amt{font-size:clamp(44px,8vw,84px);line-height:1;font-weight:500;letter-spacing:-.03em;margin:12px 0 4px;font-variant-numeric:tabular-nums;position:relative;z-index:1}
+.big .per{color:#B8CCEC;font-size:18px;position:relative;z-index:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;position:relative;z-index:1}
+.chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;font-size:14px;color:#D6E4FA}
+.chip b{display:block;font-size:20px;color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+.stack{display:flex;height:12px;border-radius:8px;overflow:hidden;margin:6px 0 4px;background:var(--line)}
+.stack i{height:100%;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.sec{margin-top:26px}
+.sec>h2{font-size:22px}
+.sec>p{color:var(--ink3);margin:0 0 14px;font-size:15px}
+details{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+summary{list-style:none;display:grid;grid-template-columns:14px 1fr auto 18px;gap:14px;align-items:center;padding:16px 18px;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary:hover{background:#FAFBFE}
+.dot{width:12px;height:12px;border-radius:4px}
+summary .t{font-weight:600}
+summary .t small{display:block;font-weight:400;color:var(--ink3);font-size:13.5px}
+summary .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+summary .v small{display:block;font-size:12.5px;font-weight:500;color:var(--blue2)}
+.chev{width:9px;height:9px;border:solid var(--ink3);border-width:0 2px 2px 0;transform:rotate(45deg);transition:.2s;justify-self:center}
+details[open] .chev{transform:rotate(-135deg)}
+.math{padding:4px 18px 18px 46px;border-top:1px dashed var(--line);background:#FCFDFF}
+.math .what{color:var(--ink2);font-size:14.5px;margin:14px 0 10px}
+.math .ln{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid #F0F2F6;font-size:14.5px;color:var(--ink2);flex-wrap:wrap}
+.math .ln b{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.math .ln.tot{border-bottom:0;font-weight:600;color:var(--ink)}
+.math .ln.tot b{color:var(--blue2);font-size:17px}
+.asm{width:64px;font:inherit;font-weight:600;color:var(--blue2);text-align:center;border:1px solid #C9DCFB;background:var(--pill);border-radius:8px;padding:3px 4px;margin:0 2px}
+.asm.meas{color:#0B7A6E;border-color:#A9E3DC;background:#EEFBF9}
+.src{font-size:13px;color:#0B7A6E;background:#EEFBF9;border-radius:8px;padding:8px 10px;margin:10px 0 0}
+.key{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin:0 4px 0 8px;border:1px solid}
+.note{font-size:13px;color:var(--ink3);margin-top:10px}
+.warn{background:#FFF7E6;border:1px solid #F9DFA6;color:#7A5200;border-radius:12px;padding:12px 16px;font-size:14px;margin-bottom:12px}
+.pay{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center}
+.pay .out{background:var(--pill);border-radius:14px;padding:20px;min-height:112px;display:flex;flex-direction:column;justify-content:center}
+.pay .out .n{font-size:34px;font-weight:600;color:var(--blue2);line-height:1.1;font-variant-numeric:tabular-nums}
+.prove{background:var(--navy);color:#fff;border-radius:18px;padding:26px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.prove ul{margin:10px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;color:#D6E4FA;font-size:15px}
+.prove li:before{content:"•";color:#8DBEFF;margin-right:8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;z-index:20;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.gate{max-width:560px;margin:28px auto 0}
+.gate .card{margin-top:18px}
+.gate .in{display:block;width:100%;font:inherit;font-size:17px;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0 0;background:#fff}
+.gate .in:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:transparent}
+.gate .in.bad{border-color:var(--c5)}
+.gate .err{color:#B42318;font-size:14px;margin:12px 0 0;min-height:0}
+.gate .fine{font-size:13px;color:var(--ink3);margin:14px 0 0}
+.gate ul.teaser{list-style:none;padding:0;margin:0 0 6px;display:grid;gap:8px}
+.gate ul.teaser li{display:flex;gap:10px;align-items:center;color:var(--ink2);font-size:15px}
+.hsf form{margin-top:4px}
+.hsf .hs-form-field{padding:14px 0 0}
+.hsf .hs-form-field.hs-hide{display:none!important}
+.hsf label{font-weight:600;display:block}
+.hsf .hs-field-desc{color:var(--ink3);font-size:13.5px}
+.hsf .hs-input:not([type=checkbox]):not([type=radio]){display:block;width:100%!important;font:inherit;font-size:17px;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0 0;background:#fff}
+.hsf .hs-input:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:transparent}
+.hsf .hs-input.invalid,.hsf .hs-input.error{border-color:var(--c5)}
+.hsf fieldset{max-width:none!important;border:0;padding:0;margin:0}
+.hsf .input{margin:0!important}
+.hsf ul.hs-error-msgs,.hsf ul.no-list{list-style:none;padding:0;margin:6px 0 0}
+.hsf .hs-error-msg,.hsf .hs-main-font-element{color:#B42318;font-size:14px;font-weight:400}
+.hsf .legal-consent-container{font-size:13px;color:var(--ink3);margin-top:12px}
+.hsf .hs_submit{margin-top:20px}
+.hsf .hs-button{border:0;border-radius:12px;padding:14px 22px;font:inherit;font-weight:600;background:var(--blue);color:#fff;cursor:pointer;width:100%;box-shadow:0 6px 18px rgba(38,130,253,.3)}
+.hsf .hs-button:hover{background:var(--blue2)}
+.btn[disabled]{opacity:.6;cursor:wait;transform:none}
+.btn.export{display:inline-flex;align-items:center;gap:8px}
+.btn.export svg{width:16px;height:16px}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:15}
+@media (max-width:820px){
+  .welcome,.grid,.pay,.prove{grid-template-columns:1fr}
+  .think{position:static}
+  .prove ul{grid-template-columns:1fr}
+  .num{width:124px;font-size:18px}
+  .math{padding-left:18px}
+  .big{padding:24px}
+  .dots i{width:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.top,.actions,.nav,canvas,.toast{display:none!important}body{background:#fff}details{break-inside:avoid}.big,.prove{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
-</head>
-<body>
-<div class="wrap">
 
-<div class="brand">
-  <div class="brand-logo">ax<span>ya</span></div>
-</div>
-
-<div class="steps-row">
-  <div class="step-item"><div class="step-circle active" id="sc1">1</div><div class="step-label active" id="sl1">Your data</div></div>
-  <div class="step-line" id="sline1"></div>
-  <div class="step-item"><div class="step-circle" id="sc2">2</div><div class="step-label" id="sl2">Preview ROI</div></div>
-  <div class="step-line" id="sline2"></div>
-  <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-label" id="sl3">Full report</div></div>
-</div>
-
-<!-- STEP 1 -->
-<div id="step1">
-  <div class="hero">
-    <div class="badge">Free ROI Calculator</div>
-    <h1>How much is manual procurement costing you?</h1>
-    <p>Answer 5 quick questions and we'll calculate your potential savings with Axya's order management platform.</p>
-  </div>
-  <div class="card">
-    <div class="card-title">Tell us about your procurement team</div>
-    <div class="card-sub">Takes under 2 minutes. No commitment required.</div>
-    <div class="grid2">
-      <div class="field">
-        <label>Industry</label>
-        <select class="inp" id="industry">
-          <option value="machinery">Industrial Machinery</option>
-          <option value="aerospace">Aerospace and Defense</option>
-          <option value="auto">Automotive</option>
-          <option value="electronics">Electronics</option>
-          <option value="medical">Medical Devices</option>
-          <option value="food">Food and Beverage</option>
-          <option value="other">Other Manufacturing</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Company size</label>
-        <select class="inp" id="emp_range">
-          <option value="50">10-50 employees</option>
-          <option value="150" selected>51-250 employees</option>
-          <option value="500">251-1,000 employees</option>
-          <option value="2000">1,000+ employees</option>
-        </select>
-      </div>
-    </div>
-    <div class="field">
-      <label>Number of buyers / procurement staff</label>
-      <div class="slider-row">
-        <input type="range" id="buyers" min="1" max="50" step="1" value="3">
-        <span class="slider-val" id="buyers-out">3 people</span>
-      </div>
-    </div>
-    <div class="field">
-      <label>Average buyer salary ($ / year)</label>
-      <div class="slider-row">
-        <input type="range" id="salary" min="40000" max="150000" step="5000" value="65000">
-        <span class="slider-val" id="salary-out">$65,000</span>
-      </div>
-    </div>
-    <div class="field">
-      <label>Purchase order lines sent per year</label>
-      <div class="slider-row">
-        <input type="range" id="po_lines" min="500" max="100000" step="500" value="10000">
-        <span class="slider-val" id="polines-out">10,000</span>
-      </div>
-      <div class="hint">Each PO typically contains multiple line items</div>
-    </div>
-    <button class="btn-primary" id="btn-calc">Calculate my ROI</button>
-  </div>
-</div>
-
-<!-- STEP 2 -->
-<div id="step2" class="hidden">
-  <div class="teaser-box">
-    <div class="teaser-label">Your estimated annual savings</div>
-    <div class="teaser-amount" id="teaser-total">-</div>
-    <div class="teaser-sub">Based on your procurement profile</div>
-    <div class="teaser-metrics">
-      <div class="t-metric"><div class="lbl">ROI multiple</div><div class="val" id="t-roi">-</div></div>
-      <div class="t-metric"><div class="lbl">Payback period</div><div class="val" id="t-payback">-</div></div>
-      <div class="t-metric"><div class="lbl">Hours saved / yr</div><div class="val" id="t-hours">-</div></div>
-      <div class="t-metric"><div class="lbl">Late orders reduced</div><div class="val">67%</div></div>
-    </div>
-  </div>
-  <div class="locked-preview">
-    <div class="blurred-rows blur-content">
-      <div class="blurred-row"></div>
-      <div class="blurred-row"></div>
-      <div class="blurred-row"></div>
-      <div class="blurred-row"></div>
-      <div class="blurred-row"></div>
-    </div>
-    <div class="lock-overlay">
-      <div class="lock-icon">&#128274;</div>
-      <div class="lock-msg">Unlock your full breakdown</div>
-      <div class="lock-sub">See savings by category, industry benchmarks and personalised tips - free</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="gate-title">Get your full ROI report</div>
-    <div class="gate-sub">Enter your details and we'll send you a detailed breakdown with industry benchmarks and tips to improve your procurement operations.</div>
-    <!-- HubSpot form renders here -->
-    <div id="hs-form-target"></div>
-    <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:10px">No spam. Unsubscribe anytime.</p>
-  </div>
-</div>
-
-<!-- STEP 3 -->
-<div id="step3" class="hidden">
-  <div class="results-header">
-    <h2 id="results-name">Your ROI Report</h2>
-    <p>Here's the full breakdown of your projected savings with Axya</p>
-  </div>
-  <div class="roi-summary">
-    <div class="s-label">Total annual value delivered</div>
-    <div class="s-amount" id="r-total">-</div>
-    <div class="s-sub">per year for your first business unit</div>
-    <div class="roi-cols">
-      <div class="roi-col"><div class="cl">ROI multiple</div><div class="cv" id="r-roi">-</div></div>
-      <div class="roi-col"><div class="cl">Payback period</div><div class="cv" id="r-payback">-</div></div>
-      <div class="roi-col"><div class="cl">Hours saved / yr</div><div class="cv" id="r-hours">-</div></div>
-    </div>
-  </div>
-  <div id="benefits-detail"></div>
-  <div class="bench-card">
-    <h3>How you compare to similar companies</h3>
-    <div class="bench-row">
-      <div class="bench-top"><span class="bl">Buyer time on admin tasks (industry avg)</span><span class="bv">60%</span></div>
-      <div class="bench-track"><div class="bench-fill blue" style="width:60%"></div></div>
-    </div>
-    <div class="bench-row">
-      <div class="bench-top"><span class="bl">Buyer time on admin tasks (with Axya)</span><span class="bv">30%</span></div>
-      <div class="bench-track"><div class="bench-fill green" style="width:30%"></div></div>
-    </div>
-    <div class="bench-row">
-      <div class="bench-top"><span class="bl">Late orders (industry avg)</span><span class="bv">~10%</span></div>
-      <div class="bench-track"><div class="bench-fill amber" style="width:10%"></div></div>
-    </div>
-    <div class="bench-row" style="margin-bottom:0">
-      <div class="bench-top"><span class="bl">Late orders (with Axya)</span><span class="bv">~3%</span></div>
-      <div class="bench-track"><div class="bench-fill green" style="width:3%"></div></div>
-    </div>
-  </div>
-  <div class="tip-card">
-    <h3>Tips to improve your procurement operations</h3>
-    <div class="tip-item"><div class="tip-num">1</div><div class="tip-text"><div class="tt">Centralise order tracking in one platform</div><div class="ts">Buyers spend up to 40% of their day chasing order status across emails, ERP screens, and supplier portals. A single source of truth cuts this dramatically.</div></div></div>
-    <div class="tip-item"><div class="tip-num">2</div><div class="tip-text"><div class="tt">Set up proactive late-order alerts</div><div class="ts">Don't wait for production to flag a missing part. Automated supplier confirmations and deviation alerts let you act weeks earlier.</div></div></div>
-    <div class="tip-item"><div class="tip-num">3</div><div class="tip-text"><div class="tt">Give non-buyers self-serve visibility</div><div class="ts">Every time a project manager or ops lead asks a buyer for a status update, it costs 15-30 minutes. Dashboards and AI chatbots eliminate this interrupt.</div></div></div>
-    <div class="tip-item"><div class="tip-num">4</div><div class="tip-text"><div class="tt">Start measuring supplier on-time performance</div><div class="ts">You can't improve what you don't measure. A structured supplier scorecard reduces late deliveries by an average of 40% within 6 months.</div></div></div>
-  </div>
-  <div class="cta-card">
-    <h3>Ready to capture this value?</h3>
-    <p>Book a 30-minute call with an Axya procurement specialist. We'll walk through your numbers and show you exactly how to get there.</p>
-    <button class="btn-cta" onclick="alert('Add your Calendly or HubSpot meeting link here')">Book a free demo call</button>
-    <button class="btn-outline" onclick="window.print()">Download PDF</button>
-  </div>
-  <div class="disclaimer">
-    Results are estimates based on Axya customer benchmarks and industry data. Actual results may vary.
-  </div>
-</div>
-
-</div>
-
-<!-- HubSpot -->
-<script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+<header class="top"><div class="in">
+  <img alt="Axya" src="data:image/png;base64,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">
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <div class="cur" role="group" aria-label="Currency"><button data-cur="CAD">CAD</button><button data-cur="USD">USD</button></div>
+</div></header>
+<main id="app"></main>
+<canvas id="fx"></canvas>
+<div class="toast" id="toast" role="status"></div>
 
 <script>
+const DEFAULTS = {
+  step:0, cur:'CAD',
+  buyers:8, cost:85000, pos:16000, lpp:3, latePct:10, spend:50000000, quote:0,
+  // Editable on the results page. Keys listed in MEASURED come from the prod replica (2026-11-12: POs sent 30-120 days earlier,
+  // 44 customers, 33,868 POs, 98,622 lines; classification jobs and thread events over 90 days). The rest are assumptions.
+  a:{ emailsPerPo:3, minPerEmail:2, mailboxAuto:86,
+      minPerLine:1.5, confAuto:61,
+      chasePct:40, minPerChase:5, chaseAuto:90,
+      criticalPct:20, expediteCost:400, lateReduction:30,
+      volatilePct:16, identifiedPct:2.5, recoveredPct:10 }
+};
+let S = structuredClone(DEFAULTS);
+// ---- Lead capture (HubSpot Forms API, no key needed) ----
+const HS = { portal:'5408365', region:'na1', form:'61d0077b-e31a-4c56-bccb-c48207498154',
+  // Hidden multi-line text field on the form that receives the results summary.
+  // It must exist on the form, otherwise the summary is dropped and only email + company are sent.
+  resultsField:'website_roi_calculator_form', altFields:['message'] };
+let LEAD = null; // {email, company} once the gate is passed; survives "Start over"
+const QS = new URLSearchParams(location.search);
+const MEASURED = new Set(['emailsPerPo','mailboxAuto','confAuto','volatilePct','criticalPct']);
+const open = new Set(['mailbox']);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (q, el=document) => el.querySelector(q);
+const app = $('#app');
 
+const money = n => new Intl.NumberFormat('en-CA',{style:'currency',currency:S.cur,currencyDisplay:'narrowSymbol',maximumFractionDigits:0}).format(Math.round(n||0));
+const short = n => { const a=Math.abs(n); const s = a>=1e6 ? (a/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,'')+'M' : a>=1e4 ? Math.round(a/1e3)+'K' : Math.round(a).toLocaleString('en-CA'); return '$'+s; };
+const num = (n,d=0) => (n||0).toLocaleString('en-CA',{minimumFractionDigits:d,maximumFractionDigits:d});
+const parse = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isFinite(n) ? n : 0; };
 
-function $(id){return document.getElementById(id);}
-function fmtK(n){return n>=1000?'$'+Math.round(n/1000)+'K':'$'+Math.round(n);}
-function fmt(n){return '$'+Math.round(n).toLocaleString();}
-function fmtN(n){return Math.round(n).toLocaleString();}
-
-function slInit(id,outId,fn){
-  var el=$(id),out=$(outId);
-  function u(){out.textContent=fn(+el.value);}
-  el.addEventListener('input',u);u();
+function calc(){
+  const a = S.a, rate = S.cost/2080, lines = S.pos*S.lpp;
+  const emails = S.pos*a.emailsPerPo;
+  const mailAll = emails*a.minPerEmail/60, mailH = mailAll*a.mailboxAuto/100;
+  const confAll = lines*a.minPerLine/60, confH = confAll*a.confAuto/100;
+  const chases = S.pos*a.chasePct/100, chaseAll = chases*a.minPerChase/60, chaseH = chaseAll*a.chaseAuto/100;
+  const hours = mailH+confH+chaseH;
+  const lateLines = lines*S.latePct/100, expedites = lateLines*a.criticalPct/100;
+  const lateCost = expedites*a.expediteCost, lateV = lateCost*a.lateReduction/100;
+  const volatile = S.spend*a.volatilePct/100, identified = volatile*a.identifiedPct/100, priceV = identified*a.recoveredPct/100;
+  const total = hours*rate + lateV + priceV;
+  return {rate, lines, emails, mailAll, mailH, confAll, confH, chases, chaseAll, chaseH, hours,
+    fte:hours/2080, perBuyerWeek:hours/Math.max(S.buyers,1)/52,
+    lateLines, expedites, expAvoided:expedites*a.lateReduction/100, lateCost, lateV,
+    volatile, identified, priceV, timeV:hours*rate, total,
+    payback: S.quote>0 && total>0 ? S.quote/(total/12) : null, multiple: S.quote>0 ? total/S.quote : null};
 }
-slInit('buyers','buyers-out',function(v){return v+' '+(v===1?'person':'people');});
-slInit('salary','salary-out',function(v){return '$'+Number(v).toLocaleString();});
-slInit('po_lines','polines-out',function(v){return Number(v).toLocaleString();});
 
-function computeROI(){
-  var buyers=+$('buyers').value;
-  var salary=+$('salary').value;
-  var lines=+$('po_lines').value;
-  var b1_lo=buyers*salary*0.5*0.75, b1_hi=buyers*salary*0.5;
-  var lateCost=lines*0.10*850*0.20;
-  var b2_lo=lateCost*0.67*0.5, b2_hi=lateCost*0.67;
-  var nonBuyers=Math.round(buyers*4);
-  var hrRate=salary/2080;
-  var b3_base=nonBuyers*52*hrRate*0.85;
-  var b3_lo=b3_base*0.5, b3_hi=b3_base;
-  var b4_lo=22500, b4_hi=45000;
-  var totalLo=b1_lo+b2_lo+b3_lo+b4_lo;
-  var totalHi=b1_hi+b2_hi+b3_hi+b4_hi;
-  var planCost=36000;
-  return{
-    totalLo:totalLo,totalHi:totalHi,
-    roiLo:totalLo/planCost,roiHi:totalHi/planCost,
-    paybackMo:Math.round((planCost/((totalLo+totalHi)/2))*12),
-    hrsSaved:Math.round(buyers*2080*0.5),
-    b1_lo:b1_lo,b1_hi:b1_hi,b2_lo:b2_lo,b2_hi:b2_hi,
-    b3_lo:b3_lo,b3_hi:b3_hi,b4_lo:b4_lo,b4_hi:b4_hi,
-    nonBuyers:nonBuyers,hrRate:hrRate,lines:lines,
-    buyers:buyers,salary:salary
+const STEPS = [null,
+ { eyebrow:'Step 1 of 3 · Your team', title:'Who places and follows up your purchase orders?',
+   fields:[
+    {k:'buyers', label:'Buyers managing orders', hint:'People who send POs and follow them to delivery', min:1, max:60, step:1},
+    {k:'cost', label:'Yearly cost of one buyer', hint:'Salary plus benefits and overhead', min:40000, max:180000, step:1000, money:true}],
+   think:r=>`<p>Your team has <b>${num(S.buyers*2080)}</b> working hours a year, costing about <b>${money(S.buyers*S.cost)}</b>.</p>
+     <p>That makes one buyer hour worth <b>${money(r.rate)}</b>. Every hour we find later is valued at this rate, nothing more.</p>
+     <p class="why">Why we ask: time is only worth what you pay for it. We use your cost, not an industry average.</p>`},
+ { eyebrow:'Step 2 of 3 · Your orders', title:'How much flows through that team?',
+   fields:[
+    {k:'pos', label:'Purchase orders per year', hint:'A rough number is fine', min:500, max:100000, step:500},
+    {k:'lpp', label:'Lines per purchase order', hint:'Average number of parts or items on one PO', min:1, max:20, step:0.5, d:1}],
+   think:r=>`<p>That is <b>${num(S.pos/Math.max(S.buyers,1)/52)}</b> POs per buyer every week, and <b>${num(r.lines)}</b> lines a year to confirm.</p>
+     <p>Each PO usually triggers about ${S.a.emailsPerPo} supplier emails: acknowledgement, date change, question, shipping notice. So roughly <b>${num(r.emails)}</b> emails a year, or <b>${num(r.emails/Math.max(S.buyers,1)/230)}</b> per buyer per working day.</p>
+     <p class="why">Why we ask: Axya's AI reads and classifies those emails and reads supplier confirmations for you. The saving scales with volume, so we count the volume first.</p>`},
+ { eyebrow:'Step 3 of 3 · Deliveries and spend', title:'Where does it hurt today?',
+   fields:[
+    {k:'latePct', label:'PO lines that arrive late', hint:'Your best estimate, as a share of all lines', min:0, max:40, step:1, suffix:'%'},
+    {k:'spend', label:'Yearly purchasing spend', hint:'Goods and services bought through POs', min:1000000, max:500000000, step:1000000, money:true}],
+   think:r=>`<p><b>${num(r.lateLines)}</b> lines arrive late each year. About 1 in ${num(100/S.a.criticalPct)} is critical enough to expedite: <b>${num(r.expedites)}</b> rush orders or premium shipments.</p>
+     <p>Of your ${short(S.spend)} spend, around ${S.a.volatilePct}% (<b>${short(r.volatile)}</b>) is on parts whose price moves during the year. That is where unnoticed increases slip in.</p>
+     <p class="why">Why we ask: when a supplier confirms a later date or a higher price, Axya flags it the same day instead of at receiving or invoicing.</p>`}
+];
+
+function dots(){ $('#dots').innerHTML = [1,2,3,4].map(i=>`<i class="${S.step>=i?'on':''}"></i>`).join('');
+  document.querySelectorAll('.cur button').forEach(b=>b.classList.toggle('on', b.dataset.cur===S.cur)); }
+
+function go(step){ S.step = step; render(); scrollTo({top:0, behavior:reduce?'auto':'smooth'}); toTop(); }
+function toTop(){ if (window.parent !== window) parent.postMessage({type:'axya-roi-top'}, '*'); }
+
+function render(){
+  dots();
+  if (S.step===0) return welcome();
+  if (S.step<=3) return stepView(STEPS[S.step]);
+  if (S.step===4) return LEAD ? thinking() : gate();
+  results();
+}
+
+function welcome(){
+  app.innerHTML = `<section class="welcome fade">
+    <div>
+      <div class="eyebrow">Value estimator</div>
+      <h1>What is chasing purchase orders costing you?</h1>
+      <p class="lead">Answer six quick questions about your team and your orders. You will see what Axya could give back each year, and every step of the reasoning behind the number.</p>
+      <button class="btn" id="start">Start, it takes 2 minutes</button>
+      <div class="meta"><span>Takes 2 minutes</span><span>Every assumption is editable</span><span>Download your results as a PDF</span></div>
+    </div>
+    <div class="how">
+      <h3>How we work it out</h3>
+      <ol>
+        <li><b>Count the work.</b> Supplier emails, confirmations to re-enter and follow-ups, from your own PO volume.</li>
+        <li><b>Apply what the AI handles.</b> Mailbox processing, classification and confirmation each take a share of that work.</li>
+        <li><b>Price it at your cost.</b> Your buyer rate, your late lines, your spend.</li>
+        <li><b>Show the math.</b> Open any line, change any assumption, watch the total move.</li>
+      </ol>
+    </div></section>`;
+  $('#start').onclick = () => go(1);
+}
+
+function stepView(st){
+  app.innerHTML = `<section class="fade">
+    <div class="eyebrow">${st.eyebrow}</div><h2>${st.title}</h2>
+    <div class="grid" style="margin-top:18px">
+      <div class="card">
+        ${st.fields.map(f=>`<div class="field"><div class="row">
+            <div><label for="f_${f.k}">${f.label}</label><small>${f.hint}</small></div>
+            <input class="num" id="f_${f.k}" data-k="${f.k}" inputmode="decimal" autocomplete="off"></div>
+            <input type="range" id="r_${f.k}" data-k="${f.k}" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.label}"></div>`).join('')}
+        <div class="nav"><button class="btn ghost" id="back">Back</button>
+          <button class="btn" id="next">${S.step===3?'Show me the value':'Continue'}</button></div>
+      </div>
+      <aside class="think" aria-live="polite"><h3>What this tells us</h3><div id="think"></div></aside>
+    </div></section>`;
+  const show = (f, focusEl) => {
+    const v = S[f.k], t = f.money ? money(v) : num(v, Number.isInteger(v)?0:(f.d||0)) + (f.suffix||'');
+    const n = $(`#f_${f.k}`); if (n !== focusEl) n.value = t;
+    const r = $(`input[type=range][data-k=${f.k}]`); if (r !== focusEl) r.value = v;
+  };
+  const refresh = el => { st.fields.forEach(f=>show(f, el)); $('#think').innerHTML = st.think(calc()); };
+  st.fields.forEach(f=>{
+    const n = $(`#f_${f.k}`), r = $(`input[type=range][data-k=${f.k}]`);
+    r.oninput = () => { S[f.k] = +r.value; refresh(r); };
+    n.oninput = () => { S[f.k] = parse(n.value); refresh(n); };
+    n.onblur = () => { if (S[f.k] < f.min && f.min > 0 && f.k!=='latePct') S[f.k] = f.min; refresh(); };
+    n.onfocus = () => n.select();
+    n.onkeydown = e => { if (e.key==='Enter') $('#next').click(); };
+  });
+  refresh();
+  $('#back').onclick = () => go(S.step-1);
+  $('#next').onclick = () => go(S.step+1);
+}
+
+function thinking(){
+  const r = calc();
+  const rows = [
+    ['Counting supplier emails', num(r.emails)+' a year'],
+    ['Timing confirmations to re-enter', num(r.lines)+' lines'],
+    ['Finding follow-ups on silent suppliers', num(r.chases)+' chases'],
+    ['Finding rush orders behind late lines', num(r.expedites)+' a year'],
+    ['Sizing spend exposed to price changes', short(r.volatile)]];
+  app.innerHTML = `<section class="calc fade"><div class="eyebrow">Working it out</div><h2>Putting your numbers together</h2>
+    <ul>${rows.map(x=>`<li><i class="tick"></i>${x[0]}<span>${x[1]}</span></li>`).join('')}</ul></section>`;
+  const lis = [...app.querySelectorAll('li')], gap = reduce ? 0 : 380;
+  lis.forEach((li,i)=>setTimeout(()=>li.classList.add('on'), 150+i*gap));
+  setTimeout(()=>{ if (S.step===4) { S.step=5; render(); scrollTo(0,0); celebrate(); } }, 150+lis.length*gap+(reduce?0:500));
+}
+
+const asm = (k, suffix='') => `<input class="asm${MEASURED.has(k)?' meas':''}" title="${MEASURED.has(k)?'Measured on Axya customers':'Our assumption'}" id="a_${k}" data-a="${k}" value="${S.a[k]}" inputmode="decimal" aria-label="${k}">${suffix}`;
+
+function valueItems(r, asm){
+  const h = n => num(n)+' h';
+  return [
+   {id:'mailbox', c:'--c1', name:'AI mailbox processing', sub:'Supplier emails read, classified and matched to the right PO', v:r.mailH*r.rate, tag:h(r.mailH)+' back',
+    what:'Buyers open every supplier email to work out what it is about and which order it belongs to. Axya reads the shared mailbox, classifies each message and attaches it to the PO, so buyers only see the ones that need a decision.',
+    lines:[
+     [`${num(S.pos)} POs × ${asm('emailsPerPo')} supplier emails per PO`, num(r.emails)+' emails'],
+     [`× ${asm('minPerEmail')} minutes to open, read and file each one`, h(r.mailAll)],
+     [`× ${asm('mailboxAuto','%')} classified and filed without a buyer`, h(r.mailH)],
+     [`× ${money(r.rate)} per buyer hour`, money(r.mailH*r.rate), 1]],
+    src:'Measured over the last 90 days: about 2.8 supplier messages per PO, and 86% of incoming messages classified automatically.'},
+   {id:'conf', c:'--c2', name:'AI confirmation', sub:'Supplier confirmations read and checked against the PO', v:r.confH*r.rate, tag:h(r.confH)+' back',
+    what:'When a supplier confirms, someone compares dates, quantities and prices with the PO and re-enters them in the ERP, line by line. Axya reads the confirmation, checks it against the order, and only stops when something does not match.',
+    lines:[
+     [`${num(S.pos)} POs × ${num(S.lpp,Number.isInteger(S.lpp)?0:1)} lines`, num(r.lines)+' lines'],
+     [`× ${asm('minPerLine')} minutes to check and re-enter each line`, h(r.confAll)],
+     [`× ${asm('confAuto','%')} of lines confirmed with no touch`, h(r.confH)],
+     [`× ${money(r.rate)} per buyer hour`, money(r.confH*r.rate), 1]],
+    src:'Measured on 98,622 PO lines across 44 customers: 97% were confirmed, half of the POs within about a day, and 61% of lines were confirmed exactly as ordered with nothing to review.'},
+   {id:'chase', c:'--c3', name:'Automatic follow-ups', sub:'Reminders sent to suppliers who have not confirmed', v:r.chaseH*r.rate, tag:h(r.chaseH)+' back',
+    what:'Some suppliers never answer the first time. Axya sends the reminders and escalates only when a supplier stays silent.',
+    lines:[
+     [`${num(S.pos)} POs × ${asm('chasePct','%')} that need at least one chase`, num(r.chases)+' chases'],
+     [`× ${asm('minPerChase')} minutes to check status and write each one`, h(r.chaseAll)],
+     [`× ${asm('chaseAuto','%')} sent automatically`, h(r.chaseH)],
+     [`× ${money(r.rate)} per buyer hour`, money(r.chaseH*r.rate), 1]]},
+   {id:'late', c:'--c4', name:'Late deliveries caught early', sub:'Date changes flagged the day the supplier sends them', v:r.lateV, tag:num(r.expAvoided)+' rush orders avoided',
+    what:'A late line costs money when you find out too late to react: rush fees, premium freight, overtime. Knowing weeks earlier leaves time to re-plan. Axya does not make suppliers faster, so we only count part of the cost.',
+    lines:[
+     [`${num(r.lines)} lines × ${num(S.latePct)}% late`, num(r.lateLines)+' late lines'],
+     [`× ${asm('criticalPct','%')} critical enough to expedite`, num(r.expedites)+' rush orders'],
+     [`× ${asm('expediteCost')} average cost of one rush order`, money(r.lateCost)],
+     [`× ${asm('lateReduction','%')} avoided with earlier warning`, money(r.lateV), 1]],
+    src:'Measured on the same lines: suppliers changed the delivery date on 29% of them at confirmation. The share that needs expediting is an average reported by Axya customers.'},
+   {id:'price', c:'--c5', name:'Price changes caught at confirmation', sub:'Confirmed price compared with the PO price on every line', v:r.priceV, tag:short(r.identified)+' flagged',
+    what:'Price increases often arrive inside a confirmation and are only noticed at invoicing. Axya flags every difference when it comes in. Flagging is not saving, so we count only the share you are likely to negotiate back.',
+    lines:[
+     [`${short(S.spend)} spend × ${asm('volatilePct','%')} on parts whose price moves`, short(r.volatile)],
+     [`× ${asm('identifiedPct','%')} in increases flagged`, money(r.identified)],
+     [`× ${asm('recoveredPct','%')} negotiated back or avoided`, money(r.priceV), 1]],
+    src:'Measured: suppliers changed the price on 15% of lines at confirmation, and half of the increases were above 11%. How much you win back depends on your contracts, so we keep that share low.'}
+  ];
+}
+
+function results(){
+  const r = calc(), h = n => num(n)+' h';
+  const items = valueItems(r, asm);
+  const tot = r.total || 1;
+  app.innerHTML = `<section class="fade">
+    <div class="big">
+      <div class="eyebrow">Your estimate</div>
+      <div class="amt" id="amt">${money(0)}</div>
+      <div class="per">of value a year, once Axya is fully rolled out</div>
+      <div class="chips">
+        <div class="chip"><b>${num(r.hours)} h</b>buyer time back, about ${num(r.fte,1)} full-time ${r.fte>=1.5?'people':'person'}</div>
+        <div class="chip"><b>${num(r.expAvoided)}</b>rush orders avoided</div>
+        <div class="chip"><b>${money(r.total*.6)}</b>if only 60% of this materialises</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>How we got there</h2>
+      <p>Five things Axya does, each priced with your numbers. Open a line to see the math, and change any box. <i class="key" style="background:#EEFBF9;border-color:#A9E3DC"></i>Measured on Axya customers <i class="key" style="background:var(--pill);border-color:#C9DCFB"></i>Our assumption</p>
+      ${r.perBuyerWeek>25?`<div class="warn">These savings add up to ${num(r.perBuyerWeek)} hours per buyer per week, which is more time than most buyers spend on order follow-up. Check the PO volume or lower the assumptions.</div>`:''}
+      <div class="stack" aria-hidden="true">${items.map(i=>`<i style="width:${i.v/tot*100}%;background:var(${i.c})"></i>`).join('')}</div>
+      <p class="note" style="margin:0 0 14px">Time back comes to ${num(r.perBuyerWeek,1)} hours per buyer per week. That is the figure to sanity-check with your team.</p>
+      ${items.map(i=>`<details data-id="${i.id}" ${open.has(i.id)?'open':''}>
+        <summary><i class="dot" style="background:var(${i.c})"></i>
+          <span class="t">${i.name}<small>${i.sub}</small></span>
+          <span class="v">${money(i.v)}<small>${i.tag}</small></span><i class="chev"></i></summary>
+        <div class="math"><p class="what">${i.what}</p>
+          ${i.lines.map(l=>`<div class="ln ${l[2]?'tot':''}"><span>${l[0]}</span><b>${l[1]}</b></div>`).join('')}
+          ${i.src?`<p class="src">${i.src}</p>`:''}
+        </div></details>`).join('')}
+    </div>
+
+    <div class="sec card">
+      <h2 style="margin-top:0">Does it pay for itself?</h2>
+      <div class="pay">
+        <div class="field" style="border:0;padding:0"><div class="row">
+          <div><label for="quote">Your yearly Axya quote</label><small>Optional. Enter it to see payback.</small></div>
+          <input class="num" id="quote" inputmode="decimal" placeholder="${S.cur==='CAD'?'$':'$'}0" value="${S.quote?money(S.quote):''}"></div></div>
+        <div class="out" id="payout"></div>
+      </div>
+    </div>
+
+    <div class="sec prove">
+      <div><div class="eyebrow" style="color:#8DBEFF">Prove it first</div>
+        <h2 style="margin:6px 0 0">An estimate is not a result. A pilot is.</h2>
+        <ul><li>90-day pilot from go-live</li><li>Baseline measured in week 1</li><li>Success is your number</li><li>Miss it at day 90, opt out</li></ul></div>
+      <a class="btn" href="https://www.axya.co" target="_blank" rel="noopener" style="text-decoration:none">Talk to us about a pilot</a>
+    </div>
+
+    <div class="actions">
+      <button class="btn sm export" id="export"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Export my results</button>
+      <button class="btn ghost sm" id="edit">Change my answers</button>
+      <button class="btn ghost sm" id="reset">Start over</button>
+    </div>
+    <p class="note">Estimates only. Measured figures are averages across Axya customers and yours will differ. Minutes per task and the other assumptions should be replaced by what the pilot measures. Time back is capacity for your team, not a cash saving, unless it replaces a hire or overtime.</p>
+  </section>`;
+
+  countUp($('#amt'), results.last ?? 0, r.total); results.last = r.total;
+  payout();
+  app.querySelectorAll('details').forEach(d=>d.ontoggle=()=>d.open?open.add(d.dataset.id):open.delete(d.dataset.id));
+  app.querySelectorAll('.asm').forEach(i=>{
+    i.onfocus = () => i.select();
+    i.onchange = () => { const k=i.dataset.a; let v=parse(i.value); if (/Auto|Pct|Reduction/.test(k)) v=Math.min(100,v); S.a[k]=v; const y=scrollY; results(); scrollTo(0,y); };
+    i.onkeydown = e => { if (e.key==='Enter') i.blur(); };
+  });
+  const q = $('#quote');
+  q.oninput = () => { S.quote = parse(q.value); payout(); };
+  q.onblur = () => { q.value = S.quote ? money(S.quote) : ''; };
+  q.onfocus = () => q.select();
+  $('#edit').onclick = () => go(1);
+  $('#reset').onclick = () => { S = structuredClone(DEFAULTS); results.last = 0; render(); };
+  $('#export').onclick = exportPdf;
+}
+
+// ---------- Gate: the HubSpot form itself, with the results summary in its hidden "message" field ----------
+// Falls back to customGate() (Forms API) if the HubSpot embed can't load.
+function loadHubSpot(){
+  if (window.hbspt?.forms) return Promise.resolve();
+  return loadHubSpot.p ||= new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = 'https://js.hsforms.net/forms/embed/v2.js'; s.charset = 'utf-8';
+    s.onload = () => window.hbspt?.forms ? ok() : ko(new Error('hbspt missing'));
+    s.onerror = () => { loadHubSpot.p = null; ko(new Error('HubSpot embed failed to load')); };
+    document.head.appendChild(s);
+  });
+}
+
+// Set a value so HubSpot's form state (React) sees it, not just the DOM.
+function setVal(el, v){
+  const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value')?.set;
+  set ? set.call(el, v) : (el.value = v);
+  el.dispatchEvent(new Event('input', {bubbles:true})); el.dispatchEvent(new Event('change', {bubbles:true}));
+}
+
+function gate(){
+  app.innerHTML = `<section class="gate fade">
+    <div class="eyebrow">Almost there</div>
+    <h2>Your estimate is ready</h2>
+    <p style="color:var(--ink2);margin:0">Tell us where you work to see the result.</p>
+    <div class="card">
+      <ul class="teaser">
+        <li><i class="tick"></i>Your yearly value, line by line</li>
+        <li><i class="tick"></i>The math behind every number, fully editable</li>
+        <li><i class="tick"></i>A PDF of your results to share with your team</li>
+      </ul>
+      <div id="hsForm" class="hsf"><p class="fine">Loading…</p></div>
+      <button type="button" id="back" style="border:0;background:none;color:var(--ink3);padding:12px 0 0;font-size:14px">← Back to my answers</button>
+      <p class="fine">We use this to follow up on your estimate. No newsletter, no spam.</p>
+    </div></section>`;
+  $('#back').onclick = () => go(3);
+  let ready = false;
+  const fallback = setTimeout(() => { if (!ready && S.step === 4 && !LEAD) { console.warn('[Axya ROI] HubSpot form did not load, using fallback gate'); customGate(); } }, 8000);
+
+  // HubSpot fills hidden fields from the page's query string when the form renders (its documented way).
+  // Setting the DOM value afterwards is ignored by the form, so put the summary in the URL first.
+  const url = new URL(location.href), sum = summaryText();
+  [HS.resultsField, ...HS.altFields].forEach(n => url.searchParams.set(n, sum));
+  history.replaceState(null, '', url);
+  loadHubSpot().then(() => hbspt.forms.create({
+    region: HS.region, portalId: HS.portal, formId: HS.form, target: '#hsForm',
+    css: '', submitText: 'See my results',
+    onFormReady: f => {
+      ready = true; clearTimeout(fallback);
+      const form = f.jquery ? f[0] : f;
+      const q = n => form.querySelector(`[name="${n}"]`);
+      const msg = [HS.resultsField, ...HS.altFields].map(q).find(Boolean);
+      if (!msg) console.warn(`[Axya ROI] No "${HS.resultsField}" field on the HubSpot form, the summary will not be sent`);
+      msg?.closest('.hs-form-field')?.classList.add('hs-hide');
+      let t;
+      const sync = gate.sync = () => {
+        const email = q('email')?.value.trim() || '', company = q('company')?.value.trim() || '';
+        if (msg) setVal(msg, summaryText(email, company));
+      };
+      form.addEventListener('input', e => { if (e.target === msg) return; clearTimeout(t); t = setTimeout(sync, 300); });
+      sync();
+      $('#hsForm .hs-input[name=email]')?.focus({preventScroll:true});
+    },
+    onBeforeFormSubmit: f => {
+      const form = f.jquery ? f[0] : f, q = n => form.querySelector(`[name="${n}"]`)?.value.trim() || '';
+      gate.sync?.(); gate.pending = {email: q('email'), company: q('company')};
+    },
+    onFormSubmitted: () => { const u = new URL(location.href); [HS.resultsField, ...HS.altFields].forEach(n => u.searchParams.delete(n)); history.replaceState(null, '', u);
+      LEAD = gate.pending || {email:'', company:''}; render(); scrollTo(0,0); toTop(); }
+  })).catch(x => { console.warn('[Axya ROI]', x); clearTimeout(fallback); if (S.step === 4 && !LEAD) customGate(); });
+}
+
+// ---------- Gate: email + company before results ----------
+function customGate(){
+  app.innerHTML = `<section class="gate fade">
+    <div class="eyebrow">Almost there</div>
+    <h2>Your estimate is ready</h2>
+    <p style="color:var(--ink2);margin:0">Tell us where you work to see the result.</p>
+    <form class="card" id="leadForm" novalidate>
+      <ul class="teaser">
+        <li><i class="tick"></i>Your yearly value, line by line</li>
+        <li><i class="tick"></i>The math behind every number, fully editable</li>
+        <li><i class="tick"></i>A PDF of your results to share with your team</li>
+      </ul>
+      <div class="field" style="padding-top:18px"><label for="g_email">Work email</label>
+        <input class="in" id="g_email" type="email" autocomplete="email" required placeholder="you@company.com"></div>
+      <div class="field"><label for="g_company">Company name</label>
+        <input class="in" id="g_company" autocomplete="organization" required placeholder="Company Inc."></div>
+      <p class="err" id="g_err" role="alert"></p>
+      <div class="nav"><button type="button" class="btn ghost" id="back">Back</button>
+        <button class="btn" id="g_go">See my results</button></div>
+      <p class="fine">We use this to follow up on your estimate. No newsletter, no spam.</p>
+    </form></section>`;
+  const e = $('#g_email'), c = $('#g_company'), err = $('#g_err'), go_ = $('#g_go');
+  e.focus({preventScroll:true});
+  $('#back').onclick = () => go(3);
+  $('#leadForm').onsubmit = async ev => {
+    ev.preventDefault(); err.textContent = ''; e.classList.remove('bad'); c.classList.remove('bad');
+    const email = e.value.trim(), company = c.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { e.classList.add('bad'); err.textContent = 'Enter a valid work email.'; return e.focus(); }
+    if (company.length < 2) { c.classList.add('bad'); err.textContent = 'Enter your company name.'; return c.focus(); }
+    go_.disabled = true; go_.textContent = 'One moment…';
+    const res = await submitLead(email, company);
+    go_.disabled = false; go_.textContent = 'See my results';
+    if (res.emailError) { e.classList.add('bad'); err.textContent = res.emailError; return e.focus(); }
+    LEAD = {email, company};
+    render(); scrollTo(0,0); toTop();
   };
 }
 
-// Store ROI data so we can send it when HubSpot fires onFormSubmitted
-var pendingROI = null;
-
-$('btn-calc').addEventListener('click',function(){
-  var r=computeROI();
-  pendingROI = r;
-  $('teaser-total').textContent=fmtK(r.totalLo)+' - '+fmtK(r.totalHi);
-  $('t-roi').textContent=r.roiLo.toFixed(1)+'x - '+r.roiHi.toFixed(1)+'x';
-  $('t-payback').textContent=r.paybackMo<=1?'<1 mo':r.paybackMo+' mo';
-  $('t-hours').textContent=fmtN(r.hrsSaved);
-  setStep(2);
-});
-
-
-function showResults(r, firstname) {
-  $('results-name').textContent = firstname + "'s ROI Report";
-  $('r-total').textContent = fmt(r.totalLo) + ' - ' + fmt(r.totalHi);
-  $('r-roi').textContent   = r.roiLo.toFixed(1) + 'x - ' + r.roiHi.toFixed(1) + 'x';
-  $('r-payback').textContent = r.paybackMo <= 1 ? '< 1 month' : r.paybackMo + ' months';
-  $('r-hours').textContent = fmtN(r.hrsSaved);
-
-  var benefits=[
-    {title:'1. Increased buyer productivity',sub:'Time reallocated to value-added tasks',
-     rows:[['Buyers on your team',r.buyers+' people'],['Avg. buyer salary',fmt(r.salary)],['Productivity gain','2x (50% time saved)'],['Hours saved per year',fmtN(r.hrsSaved)+' hrs']],
-     lo:r.b1_lo,hi:r.b1_hi},
-    {title:'2. Reduction in unexpected late orders',sub:'More visibility and proactive intelligence',
-     rows:[['PO lines per year',fmtN(r.lines)],['Avg. late order rate','10%'],['Reduction in late orders','67%'],['Cost per late line','$170']],
-     lo:r.b2_lo,hi:r.b2_hi},
-    {title:'3. Cross-departmental efficiency',sub:'Fewer meetings, emails, and status requests',
-     rows:[['Non-buyers engaging with procurement',r.nonBuyers+' people'],['Sync time saved per week','~85% reduction'],['Hourly labour rate','$'+Math.round(r.hrRate)+'/hr']],
-     lo:r.b3_lo,hi:r.b3_hi},
-    {title:'4. BI and data infrastructure savings',sub:'Structured supply chain data without custom builds',
-     rows:[['Amortized DB and BI build cost','$45,000/yr'],['Replaced by Axya built-in analytics','Full replacement']],
-     lo:r.b4_lo,hi:r.b4_hi}
-  ];
-
-  $('benefits-detail').innerHTML=benefits.map(function(b){
-    return '<div class="benefit-card">'
-      +'<div class="bc-header"><div class="bt">'+b.title+'</div><div class="bs">'+b.sub+'</div></div>'
-      +b.rows.map(function(row){return '<div class="bc-row"><span class="rl">'+row[0]+'</span><span class="rv">'+row[1]+'</span></div>';}).join('')
-      +'<div class="bc-footer"><span class="fl">Value delivered</span><span class="fv">'+fmt(b.lo)+' - '+fmt(b.hi)+'</span></div>'
-      +'</div>';
-  }).join('');
-
-  setStep(3);
+// Sends email, company and a plain-text results summary to the HubSpot form.
+// HubSpot then sends its submission notification (set the recipients in the form's settings).
+async function submitLead(email, company){
+  const url = `https://api.hsforms.com/submissions/v3/integration/submit/${HS.portal}/${HS.form}`;
+  const base = [{objectTypeId:'0-1', name:'email', value:email}, {objectTypeId:'0-1', name:'company', value:company}];
+  const context = { pageUri: document.referrer || location.href, pageName:'Axya Value Estimator' };
+  const hutk = QS.get('hutk'); if (hutk) context.hutk = hutk;
+  const send = fields => fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fields, context})})
+    .then(async r => ({ok:r.ok, body: await r.json().catch(()=>({}))}));
+  try {
+    let r = await send(HS.resultsField ? [...base, {objectTypeId:'0-1', name:HS.resultsField, value:summaryText(email, company)}] : base);
+    const types = b => (b.errors||[]).map(x=>x.errorType||'');
+    if (!r.ok && types(r.body).includes('FIELD_NOT_IN_FORM_DEFINITION')) {
+      console.warn(`[Axya ROI] Field "${HS.resultsField}" is not on the HubSpot form. Sending email + company only.`);
+      r = await send(base);
+    }
+    if (r.ok) return {ok:true};
+    const t = types(r.body);
+    if (t.includes('BLOCKED_EMAIL')) return {emailError:'Please use your work email address.'};
+    if (t.includes('INVALID_EMAIL')) return {emailError:'That email address does not look right.'};
+    console.warn('[Axya ROI] HubSpot submission failed', r.body);
+    return {ok:false};
+  } catch (x) { console.warn('[Axya ROI] HubSpot submission failed', x); return {ok:false}; }
 }
 
-// Init HubSpot form — wait for script to load before calling
-function initHubSpotForm() {
-  if (typeof hbspt === 'undefined') {
-    setTimeout(initHubSpotForm, 100);
-    return;
+function inputRows(){
+  return [
+    ['Buyers managing orders', num(S.buyers)],
+    ['Yearly cost of one buyer', money(S.cost)],
+    ['Purchase orders per year', num(S.pos)],
+    ['Lines per purchase order', num(S.lpp, Number.isInteger(S.lpp)?0:1)],
+    ['PO lines that arrive late', num(S.latePct)+'%'],
+    ['Yearly purchasing spend', money(S.spend)]];
+}
+
+function summaryText(email='', company=''){
+  const r = calc(), it = valueItems(r, (k,s='')=>S.a[k]+s);
+  return [
+    'AXYA VALUE ESTIMATOR - RESULTS',
+    ...(company ? [`Company: ${company}`] : []), ...(email ? [`Email: ${email}`] : []), `Currency: ${S.cur}`, '',
+    'INPUTS', ...inputRows().map(x=>`- ${x[0]}: ${x[1]}`), '',
+    'RESULTS',
+    `- Total yearly value: ${money(r.total)}`,
+    `- Cautious case (60%): ${money(r.total*.6)}`,
+    `- Buyer time back: ${num(r.hours)} h/year (${num(r.fte,1)} FTE, ${num(r.perBuyerWeek,1)} h per buyer per week)`,
+    `- Rush orders avoided: ${num(r.expAvoided)}`, '',
+    'BREAKDOWN', ...it.map(i=>`- ${i.name}: ${money(i.v)} (${i.tag})`)
+  ].join('\n');
+}
+
+// ---------- PDF export ----------
+function loadJsPdf(){
+  if (window.jspdf) return Promise.resolve(window.jspdf);
+  return loadJsPdf.p ||= new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = () => window.jspdf ? ok(window.jspdf) : ko(new Error('jsPDF missing'));
+    s.onerror = () => { loadJsPdf.p = null; ko(new Error('jsPDF failed to load')); };
+    document.head.appendChild(s);
+  });
+}
+
+async function exportPdf(){
+  const b = $('#export'), label = b.innerHTML;
+  b.disabled = true; b.lastChild.textContent = 'Preparing PDF…';
+  try { const {jsPDF} = await loadJsPdf(); buildPdf(jsPDF, LEAD?.company).save(pdfName(LEAD?.company)); toast('PDF downloaded'); }
+  catch (x) { console.warn(x); window.print(); }
+  finally { b.disabled = false; b.innerHTML = label; }
+}
+
+const pdfName = c => `Axya-value-estimate-${(c||'results').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')}.pdf`;
+function buildPdf(jsPDF, company=''){
+  const r = calc(), items = valueItems(r, (k,s='')=>k==='expediteCost' ? money(S.a[k]) : num(S.a[k], Number.isInteger(S.a[k])?0:1)+s);
+  const doc = new jsPDF({unit:'pt', format:'letter'});
+  const W = 612, H = 792, M = 48, CW = W - 2*M;
+  const C = { ink:'#0B1424', ink2:'#4B5768', ink3:'#6B7686', line:'#E7EAF0', blue:'#2682FD', blue2:'#1866DB',
+    navy:'#061736', pill:'#F2F7FF', light:'#8DBEFF', soft:'#D6E4FA', green:'#0B7A6E', greenBg:'#EEFBF9',
+    c1:'#2682FD', c2:'#6C5CE7', c3:'#12B5A6', c4:'#F59E0B', c5:'#E5484D' };
+  const date = new Date().toLocaleDateString('en-CA', {year:'numeric', month:'long', day:'numeric'});
+  let y = M;
+  const font = (size, style='normal', color=C.ink) => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(color); };
+  const need = h => { if (y + h > H - 56) { doc.addPage(); y = M; } };
+  const wrap = (t, w) => doc.splitTextToSize(String(t), w);
+  const eyebrow = (t, x, yy, color=C.blue2) => { font(8, 'bold', color); doc.setCharSpace(1); doc.text(t.toUpperCase(), x, yy); doc.setCharSpace(0); };
+
+  // Header
+  const logo = document.querySelector('.top img');
+  if (logo) doc.addImage(logo.src, 'PNG', M, y, 72, 22);
+  font(9, 'normal', C.ink3);
+  doc.text(`Value estimate · ${date}`, W-M, y+8, {align:'right'});
+  if (company) { font(10, 'bold', C.ink); doc.text(`Prepared for ${company}`, W-M, y+22, {align:'right'}); }
+  y += 44;
+
+  // Hero
+  const heroH = 168;
+  doc.setFillColor(C.navy); doc.roundedRect(M, y, CW, heroH, 14, 14, 'F');
+  eyebrow('Your estimate', M+24, y+30, C.light);
+  font(40, 'normal', '#FFFFFF'); doc.text(money(r.total), M+24, y+72);
+  font(12, 'normal', '#B8CCEC'); doc.text('of value a year, once Axya is fully rolled out', M+24, y+92);
+  const chips = [
+    [`${num(r.hours)} h`, `buyer time back (${num(r.fte,1)} FTE)`],
+    [num(r.expAvoided), 'rush orders avoided'],
+    [money(r.total*.6), 'if only 60% materialises']];
+  const cw = (CW - 48 - 16) / 3;
+  chips.forEach((c, i) => {
+    const x = M + 24 + i*(cw+8);
+    doc.setFillColor('#1A2A48'); doc.roundedRect(x, y+108, cw, 42, 8, 8, 'F');
+    font(13, 'bold', '#FFFFFF'); doc.text(c[0], x+10, y+125);
+    font(8.5, 'normal', C.soft); doc.text(c[1], x+10, y+140);
+  });
+  y += heroH + 26;
+
+  // Inputs
+  font(15, 'bold'); doc.text('Your answers', M, y); y += 8;
+  font(9.5, 'normal', C.ink3); doc.text('The six numbers this estimate is built on.', M, y+12); y += 22;
+  const rows = inputRows(), colW = (CW - 12) / 2, rowH = 30;
+  doc.setFillColor(C.pill); doc.roundedRect(M, y, CW, Math.ceil(rows.length/2)*rowH + 12, 10, 10, 'F');
+  rows.forEach((row, i) => {
+    const x = M + 14 + (i%2)*(colW+12), yy = y + 12 + Math.floor(i/2)*rowH;
+    font(9.5, 'normal', C.ink2); doc.text(row[0], x, yy+13);
+    font(11, 'bold'); doc.text(row[1], x + colW - 28, yy+13, {align:'right'});
+    if (i < rows.length-2) { doc.setDrawColor('#DCE6F7'); doc.setLineWidth(.6); doc.line(x, yy+rowH-4, x+colW-28, yy+rowH-4); }
+  });
+  y += Math.ceil(rows.length/2)*rowH + 12 + 28;
+
+  // Breakdown
+  need(80);
+  font(15, 'bold'); doc.text('How we got there', M, y); y += 8;
+  font(9.5, 'normal', C.ink3);
+  doc.text(`Five things Axya does, each priced with your numbers. Time back is ${num(r.perBuyerWeek,1)} hours per buyer per week.`, M, y+12);
+  y += 24;
+  let bx = M; const tot = r.total || 1;
+  items.forEach(i => { const w = CW * i.v / tot; if (w > 0) { doc.setFillColor(C[i.c.slice(2)]); doc.rect(bx, y, w, 7, 'F'); bx += w; } });
+  y += 22;
+
+  items.forEach(i => {
+    font(9); const what = wrap(i.what, CW - 28);
+    font(8.5); const src = i.src ? wrap(i.src, CW - 48) : [];
+    const cardH = 52 + what.length*12 + 2 + i.lines.length*18 + (src.length ? 6 + src.length*11 + 10 : 0) + 12;
+    need(cardH);
+    doc.setDrawColor(C.line); doc.setLineWidth(.8); doc.roundedRect(M, y, CW, cardH, 10, 10, 'S');
+    doc.setFillColor(C[i.c.slice(2)]); doc.roundedRect(M+14, y+15, 8, 8, 2, 2, 'F');
+    font(11.5, 'bold'); doc.text(i.name, M+30, y+22);
+    font(13, 'bold', C.ink); doc.text(money(i.v), W-M-14, y+22, {align:'right'});
+    font(8.5, 'normal', C.blue2); doc.text(i.tag, W-M-14, y+34, {align:'right'});
+    font(9, 'normal', C.ink3); doc.text(i.sub, M+30, y+34);
+    let yy = y + 52;
+    font(9, 'normal', C.ink2); doc.text(what, M+14, yy); yy += what.length*12 + 2;
+    i.lines.forEach(l => {
+      const tot = !!l[2];
+      font(9.5, tot ? 'bold' : 'normal', tot ? C.ink : C.ink2); doc.text(l[0], M+14, yy+8);
+      font(tot ? 10.5 : 9.5, 'bold', tot ? C.blue2 : C.ink); doc.text(l[1], W-M-14, yy+8, {align:'right'});
+      if (!tot) { doc.setDrawColor('#F0F2F6'); doc.line(M+14, yy+14, W-M-14, yy+14); }
+      yy += 18;
+    });
+    if (src.length) {
+      yy += 6; doc.setFillColor(C.greenBg); doc.roundedRect(M+14, yy, CW-28, src.length*11 + 10, 6, 6, 'F');
+      font(8.5, 'normal', C.green); doc.text(src, M+24, yy+12);
+    }
+    y += cardH + 10;
+  });
+
+  // Payback
+  if (r.payback) {
+    need(70); y += 6;
+    doc.setFillColor(C.pill); doc.roundedRect(M, y, CW, 58, 10, 10, 'F');
+    eyebrow('Payback', M+16, y+20);
+    font(16, 'bold', C.blue2); doc.text(r.payback < 1 ? 'Under 1 month' : `${num(r.payback,1)} months`, M+16, y+42);
+    font(9.5, 'normal', C.ink2);
+    font(9.5, 'normal', C.ink2); doc.text(wrap(`of value covers a yearly quote of ${money(S.quote)}. Over a full year that is ${num(r.multiple,1)}x what you pay.`, CW-190), M+170, y+30);
+    y += 76;
   }
 
-  // Listen for HubSpot postMessage events from the iframe
-  window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'hsFormCallback' && event.data.eventName === 'onFormSubmitted') {
-      var r = pendingROI || computeROI();
-      var firstname = (event.data.data && event.data.data.submissionValues && event.data.data.submissionValues.firstname) || '';
-      showResults(r, firstname);
-    }
-  });
+  // Pilot CTA
+  need(110); y += 6;
+  doc.setFillColor(C.navy); doc.roundedRect(M, y, CW, 96, 12, 12, 'F');
+  eyebrow('Prove it first', M+20, y+24, C.light);
+  font(14, 'bold', '#FFFFFF'); doc.text('An estimate is not a result. A pilot is.', M+20, y+44);
+  font(9.5, 'normal', C.soft);
+  ['90-day pilot from go-live', 'Baseline measured in week 1', 'Success is your number', 'Miss it at day 90, opt out']
+    .forEach((t, i) => doc.text('•  ' + t, M+20 + (i%2)*200, y+64 + Math.floor(i/2)*15));
+  doc.setFillColor(C.blue); doc.roundedRect(W-M-150, y+34, 130, 30, 8, 8, 'F');
+  font(10, 'bold', '#FFFFFF'); doc.textWithLink('Talk to us', W-M-85, y+53, {url:'https://www.axya.co', align:'center'});
+  doc.link(W-M-150, y+34, 130, 30, {url:'https://www.axya.co'});
+  y += 112;
 
-  hbspt.forms.create({
-    portalId: "5408365",
-    formId: "61d0077b-e31a-4c56-bccb-c48207498154",
-    region: "na1",
-    target: "#hs-form-target"
-  });
+  // Disclaimer
+  font(8); const note = wrap('Estimates only. Measured figures are averages across Axya customers and yours will differ. Minutes per task and the other assumptions should be replaced by what the pilot measures. Time back is capacity for your team, not a cash saving, unless it replaces a hire or overtime.', CW);
+  need(note.length*10 + 4);
+  font(8, 'normal', C.ink3); doc.text(note, M, y);
+
+  // Footer on every page
+  const n = doc.getNumberOfPages();
+  for (let p = 1; p <= n; p++) {
+    doc.setPage(p); font(8, 'normal', C.ink3);
+    doc.text('axya.co · Axya Value Estimator', M, H-28);
+    doc.text(`${p} / ${n}`, W-M, H-28, {align:'right'});
+  }
+  return doc;
 }
-initHubSpotForm();
 
-function setStep(n){
-  $('step1').classList.toggle('hidden',n!==1);
-  $('step2').classList.toggle('hidden',n!==2);
-  $('step3').classList.toggle('hidden',n!==3);
-  [1,2,3].forEach(function(i){
-    var done=i<n,active=i===n;
-    $('sc'+i).className='step-circle'+(done?' done':active?' active':'');
-    $('sl'+i).className='step-label'+(done?' done':active?' active':'');
-    if(i<3)$('sline'+i).className='step-line'+(i<n?' done':'');
-  });
-  window.scrollTo({top:0,behavior:'smooth'});
+function payout(){
+  const r = calc(), el = $('#payout'); if (!el) return;
+  if (!r.payback) { el.innerHTML = `<span style="color:var(--ink3)">Add your quote and we will show how many months of value cover a year of Axya.</span>`; return; }
+  const m = r.payback, first = payout.shown !== true;
+  el.innerHTML = `<div class="n">${m<1?'Under 1 month':num(m,1)+' months'}</div>
+    <div style="color:var(--ink2)">of value covers the yearly cost. Over a full year that is <b>${num(r.multiple,1)}×</b> what you pay${r.multiple*.6>=1?`, and still ${num(r.multiple*.6,1)}× in the cautious case.`:'.'}</div>`;
+  if (first && r.multiple>=3) { payout.shown = true; celebrate(60); }
+}
+
+function countUp(el, from, to){
+  if (reduce || from===to) { el.textContent = money(to); return; }
+  const t0 = performance.now(), d = 1100;
+  (function f(t){ const p = Math.min(1,(t-t0)/d), e = 1-Math.pow(1-p,4); el.textContent = money(from+(to-from)*e); if (p<1) requestAnimationFrame(f); })(t0);
+}
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),1800); }
+
+function celebrate(n=160){
+  if (reduce) return;
+  const c = $('#fx'), x = c.getContext('2d'), dpr = devicePixelRatio||1;
+  c.width = innerWidth*dpr; c.height = innerHeight*dpr; x.scale(dpr,dpr);
+  const cols = ['#2682FD','#8DBEFF','#6C5CE7','#12B5A6','#F59E0B','#ffffff'];
+  const ps = Array.from({length:n},(_,i)=>{ const side = i%2 ? 1 : -1; return {
+    x: innerWidth/2 + side*innerWidth*.32, y: innerHeight*.55,
+    vx: -side*(2+Math.random()*7), vy: -(9+Math.random()*9), r: 4+Math.random()*5, c: cols[i%cols.length],
+    a: Math.random()*6.28, va: (Math.random()-.5)*.4, life: 1 }; });
+  const id = celebrate.id = (celebrate.id||0)+1;
+  (function f(){
+    if (id!==celebrate.id) return;
+    x.clearRect(0,0,innerWidth,innerHeight); let alive = false;
+    for (const p of ps){ p.vy += .28; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; p.life -= .007;
+      if (p.life>0 && p.y<innerHeight+20){ alive = true; x.save(); x.globalAlpha = Math.min(1,p.life*2); x.translate(p.x,p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.r,-p.r/2,p.r*2,p.r); x.restore(); } }
+    alive ? requestAnimationFrame(f) : x.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+
+document.querySelectorAll('.cur button').forEach(b=>b.onclick=()=>{ S.cur=b.dataset.cur; render(); });
+render();
+// Tell the parent page our height so the iframe can grow with the content.
+if (window.parent !== window) {
+  const post = () => parent.postMessage({type:'axya-roi-height', height:document.documentElement.scrollHeight}, '*');
+  new ResizeObserver(post).observe(document.body); addEventListener('load', post);
 }
 </script>
-</body>
-</html>
+
+</body></html>
