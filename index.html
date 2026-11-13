@@ -414,7 +414,7 @@ function results(){
       <div><div class="eyebrow" style="color:#8DBEFF">Prove it first</div>
         <h2 style="margin:6px 0 0">An estimate is not a result. A pilot is.</h2>
         <ul><li>90-day pilot from go-live</li><li>Baseline measured in week 1</li><li>Success is your number</li><li>Miss it at day 90, opt out</li></ul></div>
-      <a class="btn" href="https://www.axya.co" target="_blank" rel="noopener" style="text-decoration:none">Talk to us about a pilot</a>
+      <a class="btn" href="https://www.axya.co/get-a-demo" target="_blank" rel="noopener" style="text-decoration:none">Talk to us about a pilot</a>
     </div>
 
     <div class="actions">
@@ -734,8 +734,8 @@ function buildPdf(jsPDF, company=''){
   ['90-day pilot from go-live', 'Baseline measured in week 1', 'Success is your number', 'Miss it at day 90, opt out']
     .forEach((t, i) => doc.text('•  ' + t, M+20 + (i%2)*200, y+64 + Math.floor(i/2)*15));
   doc.setFillColor(C.blue); doc.roundedRect(W-M-150, y+34, 130, 30, 8, 8, 'F');
-  font(10, 'bold', '#FFFFFF'); doc.textWithLink('Talk to us', W-M-85, y+53, {url:'https://www.axya.co', align:'center'});
-  doc.link(W-M-150, y+34, 130, 30, {url:'https://www.axya.co'});
+  font(10, 'bold', '#FFFFFF'); doc.textWithLink('Talk to us', W-M-85, y+53, {url:'https://www.axya.co/get-a-demo', align:'center'});
+  doc.link(W-M-150, y+34, 130, 30, {url:'https://www.axya.co/get-a-demo'});
   y += 112;
 
   // Disclaimer
@@ -793,7 +793,7 @@ document.querySelectorAll('.cur button').forEach(b=>b.onclick=()=>{ S.cur=b.data
 render();
 // Tell the parent page our height so the iframe can grow with the content.
 if (window.parent !== window) {
-  const post = () => parent.postMessage({type:'axya-roi-height', height:document.documentElement.scrollHeight}, '*');
+  const post = () => parent.postMessage({type:'axya-roi-height', height:Math.ceil(document.body.getBoundingClientRect().height)}, '*');
   new ResizeObserver(post).observe(document.body); addEventListener('load', post);
 }
 </script>
