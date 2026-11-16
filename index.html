@@ -269,14 +269,10 @@ summary:hover{background:var(--surface-light)}
 <script>
 const DEFAULTS = {
   step:0, cur:'USD',
-  buyers:8, cost:85000, pos:16000, lpp:3, latePct:10, spend:50000000, quote:0,
-  // Editable on the results page. Keys listed in MEASURED come from the prod replica (2026-11-12: POs sent 30-120 days earlier,
-  // 44 customers, 33,868 POs, 98,622 lines; classification jobs and thread events over 90 days). The rest are assumptions.
-  a:{ emailsPerPo:3, minPerEmail:2, mailboxAuto:86,
-      minPerLine:1.5, confAuto:61,
-      chasePct:40, minPerChase:5, chaseAuto:90,
-      criticalPct:20, expediteCost:400, lateReduction:30,
-      volatilePct:16, identifiedPct:2.5, recoveredPct:10 }
+  buyers:8, cost:85000, taskHours:20, spend:50000000, lateCost:150000, quote:0,
+  // Same logic as the GTM Room PO ROI calculator (time freed, volatile-spend savings, late costs avoided).
+  // Editable on the results page. Keys in MEASURED are averages across Axya customers; the rest are assumptions.
+  a:{ prodPct:50, volatilePct:16, spendPct:2.5, lateImpPct:67 }
 };
 let S = structuredClone(DEFAULTS);
 // ---- Lead capture (HubSpot Forms API, no key needed) ----
@@ -286,8 +282,8 @@ const HS = { portal:'5408365', region:'na1', form:'61d0077b-e31a-4c56-bccb-c4820
   resultsField:'website_roi_calculator_form', altFields:['message'] };
 let LEAD = null; // {email, company} once the gate is passed; survives "Start over"
 const QS = new URLSearchParams(location.search);
-const MEASURED = new Set(['emailsPerPo','mailboxAuto','confAuto','volatilePct','criticalPct']);
-const open = new Set(['mailbox']);
+const MEASURED = new Set(['volatilePct']);
+const open = new Set(['time']);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (q, el=document) => el.querySelector(q);
 const app = $('#app');
@@ -298,45 +294,26 @@ const num = (n,d=0) => (n||0).toLocaleString('en-CA',{minimumFractionDigits:d,ma
 const parse = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isFinite(n) ? n : 0; };
 
 function calc(){
-  const a = S.a, rate = S.cost/2080, lines = S.pos*S.lpp;
-  const emails = S.pos*a.emailsPerPo;
-  const mailAll = emails*a.minPerEmail/60, mailH = mailAll*a.mailboxAuto/100;
-  const confAll = lines*a.minPerLine/60, confH = confAll*a.confAuto/100;
-  const chases = S.pos*a.chasePct/100, chaseAll = chases*a.minPerChase/60, chaseH = chaseAll*a.chaseAuto/100;
-  const hours = mailH+confH+chaseH;
-  const lateLines = lines*S.latePct/100, expedites = lateLines*a.criticalPct/100;
-  const lateCost = expedites*a.expediteCost, lateV = lateCost*a.lateReduction/100;
-  const volatile = S.spend*a.volatilePct/100, identified = volatile*a.identifiedPct/100, priceV = identified*a.recoveredPct/100;
-  const total = hours*rate + lateV + priceV;
-  return {rate, lines, emails, mailAll, mailH, confAll, confH, chases, chaseAll, chaseH, hours,
-    fte:hours/2080, perBuyerWeek:hours/Math.max(S.buyers,1)/52,
-    lateLines, expedites, expAvoided:expedites*a.lateReduction/100, lateCost, lateV,
-    volatile, identified, priceV, timeV:hours*rate, total,
+  const a = S.a, rate = S.cost/2080;
+  // Time: buyers x weekly hours on PO tasks x share Axya frees x 52 weeks, at the buyer hourly rate
+  const weekly = S.buyers*S.taskHours, freedWk = S.taskHours*a.prodPct/100;
+  const hours = freedWk*S.buyers*52, timeV = hours*rate;
+  // Spend: volatile share of spend x improvement
+  const volatile = S.spend*a.volatilePct/100, priceV = volatile*a.spendPct/100;
+  // Late: annual expedite and premium freight cost x share avoided
+  const lateV = S.lateCost*a.lateImpPct/100;
+  const total = timeV + priceV + lateV;
+  return {rate, weekly, freedWk, hours, timeV, fte:hours/2080, perBuyerWeek:freedWk,
+    volatile, priceV, lateCost:S.lateCost, lateV, total,
     payback: S.quote>0 && total>0 ? S.quote/(total/12) : null, multiple: S.quote>0 ? total/S.quote : null};
 }
 
-const STEPS = [null,
- { eyebrow:'Step 1 of 3 · Your team', title:'Who places and follows up your purchase orders?',
-   fields:[
-    {k:'buyers', label:'Buyers managing orders', hint:'People who send POs and follow them to delivery', min:1, max:60, step:1},
-    {k:'cost', label:'Yearly cost of one buyer', hint:'Salary plus benefits and overhead', min:40000, max:180000, step:1000, money:true}],
-   think:r=>`<p>Your team has <b>${num(S.buyers*2080)}</b> working hours a year, costing about <b>${money(S.buyers*S.cost)}</b>.</p>
-     <p>That makes one buyer hour worth <b>${money(r.rate)}</b>. Every hour we find later is valued at this rate, nothing more.</p>
-     <p class="why">Why we ask: time is only worth what you pay for it. We use your cost, not an industry average.</p>`},
- { eyebrow:'Step 2 of 3 · Your orders', title:'How much flows through that team?',
-   fields:[
-    {k:'pos', label:'Purchase orders per year', hint:'A rough number is fine', min:500, max:100000, step:500},
-    {k:'lpp', label:'Lines per purchase order', hint:'Average number of parts or items on one PO', min:1, max:20, step:0.5, d:1}],
-   think:r=>`<p>That is <b>${num(S.pos/Math.max(S.buyers,1)/52)}</b> POs per buyer every week, and <b>${num(r.lines)}</b> lines a year to confirm.</p>
-     <p>Each PO usually triggers about ${S.a.emailsPerPo} supplier emails: acknowledgement, date change, question, shipping notice. So roughly <b>${num(r.emails)}</b> emails a year, or <b>${num(r.emails/Math.max(S.buyers,1)/230)}</b> per buyer per working day.</p>
-     <p class="why">Why we ask: Axya's AI reads and classifies those emails and reads supplier confirmations for you. The saving scales with volume, so we count the volume first.</p>`},
- { eyebrow:'Step 3 of 3 · Deliveries and spend', title:'Where does it hurt today?',
-   fields:[
-    {k:'latePct', label:'PO lines that arrive late', hint:'Your best estimate, as a share of all lines', min:0, max:40, step:1, suffix:'%'},
-    {k:'spend', label:'Yearly purchasing spend', hint:'Goods and services bought through POs', min:1000000, max:500000000, step:1000000, money:true}],
-   think:r=>`<p><b>${num(r.lateLines)}</b> lines arrive late each year. About 1 in ${num(100/S.a.criticalPct)} is critical enough to expedite: <b>${num(r.expedites)}</b> rush orders or premium shipments.</p>
-     <p>Of your ${short(S.spend)} spend, around ${S.a.volatilePct}% (<b>${short(r.volatile)}</b>) is on parts whose price moves during the year. That is where unnoticed increases slip in.</p>
-     <p class="why">Why we ask: when a supplier confirms a later date or a higher price, Axya flags it the same day instead of at receiving or invoicing.</p>`}
+const STEPS = [null, { fields:[
+  {k:'buyers', label:'Buyers managing orders', min:1, max:60, step:1},
+  {k:'cost', label:'Yearly cost of one buyer', min:40000, max:180000, step:1000, money:true},
+  {k:'taskHours', label:'Hours per buyer per week on PO tasks', min:1, max:40, step:1, suffix:' h'},
+  {k:'spend', label:'Yearly purchasing spend', min:1000000, max:500000000, step:1000000, money:true},
+  {k:'lateCost', label:'Yearly expedite and premium freight cost', min:0, max:2000000, step:5000, money:true}]}
 ];
 
 function dots(){ $('#dots').innerHTML = [1,2,3,4].map(i=>`<i class="${S.step>=i?'on':''}"></i>`).join('');
@@ -426,44 +403,25 @@ const asm = (k, suffix='') => `<input class="asm${MEASURED.has(k)?' meas':''}" t
 function valueItems(r, asm){
   const h = n => num(n)+' h';
   return [
-   {id:'mailbox', c:'--c1', name:'AI mailbox processing', sub:'Supplier emails read, classified and matched to the right PO', v:r.mailH*r.rate, tag:h(r.mailH)+' back',
-    what:'Buyers open every supplier email to work out what it is about and which order it belongs to. Axya reads the shared mailbox, classifies each message and attaches it to the PO, so buyers only see the ones that need a decision.',
+   {id:'time', c:'--c1', name:'Buyer time back', sub:'Chasing suppliers, re-keying confirmations and updating the ERP', v:r.timeV, tag:h(r.hours)+' back',
+    what:'Buyers spend a large part of their week chasing suppliers and retyping confirmations. Axya handles that work, so the same team covers more volume.',
     lines:[
-     [`${num(S.pos)} POs × ${asm('emailsPerPo')} supplier emails per PO`, num(r.emails)+' emails'],
-     [`× ${asm('minPerEmail')} minutes to open, read and file each one`, h(r.mailAll)],
-     [`× ${asm('mailboxAuto','%')} classified and filed without a buyer`, h(r.mailH)],
-     [`× ${money(r.rate)} per buyer hour`, money(r.mailH*r.rate), 1]],
-    src:'Measured over the last 90 days: about 2.8 supplier messages per PO, and 86% of incoming messages classified automatically.'},
-   {id:'conf', c:'--c2', name:'AI confirmation', sub:'Supplier confirmations read and checked against the PO', v:r.confH*r.rate, tag:h(r.confH)+' back',
-    what:'When a supplier confirms, someone compares dates, quantities and prices with the PO and re-enters them in the ERP, line by line. Axya reads the confirmation, checks it against the order, and only stops when something does not match.',
-    lines:[
-     [`${num(S.pos)} POs × ${num(S.lpp,Number.isInteger(S.lpp)?0:1)} lines`, num(r.lines)+' lines'],
-     [`× ${asm('minPerLine')} minutes to check and re-enter each line`, h(r.confAll)],
-     [`× ${asm('confAuto','%')} of lines confirmed with no touch`, h(r.confH)],
-     [`× ${money(r.rate)} per buyer hour`, money(r.confH*r.rate), 1]],
-    src:'Measured on 98,622 PO lines across 44 customers: 97% were confirmed, half of the POs within about a day, and 61% of lines were confirmed exactly as ordered with nothing to review.'},
-   {id:'chase', c:'--c3', name:'Automatic follow-ups', sub:'Reminders sent to suppliers who have not confirmed', v:r.chaseH*r.rate, tag:h(r.chaseH)+' back',
-    what:'Some suppliers never answer the first time. Axya sends the reminders and escalates only when a supplier stays silent.',
-    lines:[
-     [`${num(S.pos)} POs × ${asm('chasePct','%')} that need at least one chase`, num(r.chases)+' chases'],
-     [`× ${asm('minPerChase')} minutes to check status and write each one`, h(r.chaseAll)],
-     [`× ${asm('chaseAuto','%')} sent automatically`, h(r.chaseH)],
-     [`× ${money(r.rate)} per buyer hour`, money(r.chaseH*r.rate), 1]]},
-   {id:'late', c:'--c4', name:'Late deliveries caught early', sub:'Date changes flagged the day the supplier sends them', v:r.lateV, tag:num(r.expAvoided)+' rush orders avoided',
-    what:'A late line costs money when you find out too late to react: rush fees, premium freight, overtime. Knowing weeks earlier leaves time to re-plan. Axya does not make suppliers faster, so we only count part of the cost.',
-    lines:[
-     [`${num(r.lines)} lines × ${num(S.latePct)}% late`, num(r.lateLines)+' late lines'],
-     [`× ${asm('criticalPct','%')} critical enough to expedite`, num(r.expedites)+' rush orders'],
-     [`× ${asm('expediteCost')} average cost of one rush order`, money(r.lateCost)],
-     [`× ${asm('lateReduction','%')} avoided with earlier warning`, money(r.lateV), 1]],
-    src:'Measured on the same lines: suppliers changed the delivery date on 29% of them at confirmation. The share that needs expediting is an average reported by Axya customers.'},
-   {id:'price', c:'--c5', name:'Price changes caught at confirmation', sub:'Confirmed price compared with the PO price on every line', v:r.priceV, tag:short(r.identified)+' flagged',
-    what:'Price increases often arrive inside a confirmation and are only noticed at invoicing. Axya flags every difference when it comes in. Flagging is not saving, so we count only the share you are likely to negotiate back.',
+     [`${num(S.buyers)} buyers × ${num(S.taskHours)} h a week on PO tasks`, h(r.weekly)+' a week'],
+     [`× ${asm('prodPct','%')} of that time freed by Axya`, h(r.freedWk*S.buyers)+' a week'],
+     [`× 52 weeks`, h(r.hours)],
+     [`× ${money(r.rate)} per buyer hour`, money(r.timeV), 1]],
+    src:'Average across Axya customers: 20 hours a week per buyer on PO tasks.'},
+   {id:'price', c:'--c2', name:'Price changes caught', sub:'Confirmed price compared with the PO price on every line', v:r.priceV, tag:short(r.volatile)+' volatile spend',
+    what:'Price increases often slip in through supplier confirmations. Axya flags them when they come in, on the share of spend whose prices move.',
     lines:[
      [`${short(S.spend)} spend × ${asm('volatilePct','%')} on parts whose price moves`, short(r.volatile)],
-     [`× ${asm('identifiedPct','%')} in increases flagged`, money(r.identified)],
-     [`× ${asm('recoveredPct','%')} negotiated back or avoided`, money(r.priceV), 1]],
-    src:'Measured: suppliers changed the price on 15% of lines at confirmation, and half of the increases were above 11%. How much you win back depends on your contracts, so we keep that share low.'}
+     [`× ${asm('spendPct','%')} saved on that spend`, money(r.priceV), 1]],
+    src:'Average across Axya customers: 16% of spend is on parts whose price moves.'},
+   {id:'late', c:'--c3', name:'Late-order costs avoided', sub:'Date changes flagged the day the supplier sends them', v:r.lateV, tag:num(S.a.lateImpPct)+'% of expedite costs avoided',
+    what:'Late lines cost money in rush fees and premium freight. Knowing earlier leaves time to re-plan instead of paying to expedite.',
+    lines:[
+     [`${money(S.lateCost)} a year in expedite and premium freight`, money(S.lateCost)],
+     [`× ${asm('lateImpPct','%')} avoided with Axya`, money(r.lateV), 1]]}
   ];
 }
 
@@ -478,15 +436,15 @@ function results(){
       <div class="per">of value a year, once Axya is fully rolled out</div>
       <div class="chips">
         <div class="chip"><b>${num(r.hours)} h</b>buyer time back, about ${num(r.fte,1)} full-time ${r.fte>=1.5?'people':'person'}</div>
-        <div class="chip"><b>${num(r.expAvoided)}</b>rush orders avoided</div>
+        <div class="chip"><b>${money(r.lateV)}</b>late-order costs avoided</div>
         <div class="chip"><b>${money(r.total*.6)}</b>if only 60% of this materialises</div>
       </div>
     </div>
 
     <div class="sec">
       <h2>How we got there</h2>
-      <p>Five things Axya does, each priced with your numbers. Open a line to see the math, and change any box. <i class="key" style="background:var(--blue-050);border-color:var(--blue-200)"></i>Measured on Axya customers <i class="key" style="background:#fff;border-color:var(--border-light)"></i>Our assumption</p>
-      ${r.perBuyerWeek>25?`<div class="warn">These savings add up to ${num(r.perBuyerWeek)} hours per buyer per week, which is more time than most buyers spend on order follow-up. Check the PO volume or lower the assumptions.</div>`:''}
+      <p>Three things Axya does, each priced with your numbers. Open a line to see the math, and change any box. <i class="key" style="background:var(--blue-050);border-color:var(--blue-200)"></i>Measured on Axya customers <i class="key" style="background:#fff;border-color:var(--border-light)"></i>Our assumption</p>
+      ${r.perBuyerWeek>25?`<div class="warn">These savings add up to ${num(r.perBuyerWeek)} hours per buyer per week, which is more time than most buyers spend on order follow-up. Check the hours or lower the assumptions.</div>`:''}
       <div class="stack" aria-hidden="true">${items.map(i=>`<i style="width:${i.v/tot*100}%;background:var(${i.c})"></i>`).join('')}</div>
       <p class="note" style="margin:0 0 14px">Time back comes to ${num(r.perBuyerWeek,1)} hours per buyer per week. That is the figure to sanity-check with your team.</p>
       ${items.map(i=>`<details data-id="${i.id}" ${open.has(i.id)?'open':''}>
@@ -529,7 +487,7 @@ function results(){
   app.querySelectorAll('details').forEach(d=>d.ontoggle=()=>d.open?open.add(d.dataset.id):open.delete(d.dataset.id));
   app.querySelectorAll('.asm').forEach(i=>{
     i.onfocus = () => i.select();
-    i.onchange = () => { const k=i.dataset.a; let v=parse(i.value); if (/Auto|Pct|Reduction/.test(k)) v=Math.min(100,v); S.a[k]=v; const y=scrollY; results(); scrollTo(0,y); };
+    i.onchange = () => { const k=i.dataset.a; let v=parse(i.value); if (/Pct$/.test(k)) v=Math.min(100,v); S.a[k]=v; const y=scrollY; results(); scrollTo(0,y); };
     i.onkeydown = e => { if (e.key==='Enter') i.blur(); };
   });
   const q = $('#quote');
@@ -579,8 +537,8 @@ function calculator(){
     $('#p_sav').textContent = money(r.total);
     $('#p_h').textContent = num(r.hours) + ' h';
     $('#p_hs').textContent = `time back a year, about ${num(r.fte,1)} FTE`;
-    $('#p_l').textContent = num(S.a.lateReduction) + '%';
-    $('#p_ls').textContent = `late order reduction, ${num(r.expAvoided)} rush orders avoided`;
+    $('#p_l').textContent = num(S.a.lateImpPct) + '%';
+    $('#p_ls').textContent = `late order reduction, ${money(r.lateV)} in expedite costs avoided`;
   };
   fields.forEach(f => {
     const n = $(`#f_${f.k}`), r = $(`input[type=range][data-k=${f.k}]`);
@@ -733,10 +691,9 @@ function inputRows(){
   return [
     ['Buyers managing orders', num(S.buyers)],
     ['Yearly cost of one buyer', money(S.cost)],
-    ['Purchase orders per year', num(S.pos)],
-    ['Lines per purchase order', num(S.lpp, Number.isInteger(S.lpp)?0:1)],
-    ['PO lines that arrive late', num(S.latePct)+'%'],
-    ['Yearly purchasing spend', money(S.spend)]];
+    ['Hours per buyer per week on PO tasks', num(S.taskHours)+' h'],
+    ['Yearly purchasing spend', money(S.spend)],
+    ['Yearly expedite and premium freight', money(S.lateCost)]];
 }
 
 function summaryText(email='', company=''){
@@ -749,7 +706,7 @@ function summaryText(email='', company=''){
     `- Total yearly value: ${money(r.total)}`,
     `- Cautious case (60%): ${money(r.total*.6)}`,
     `- Buyer time back: ${num(r.hours)} h/year (${num(r.fte,1)} FTE, ${num(r.perBuyerWeek,1)} h per buyer per week)`,
-    `- Rush orders avoided: ${num(r.expAvoided)}`, '',
+    `- Late-order costs avoided: ${money(r.lateV)}`, '',
     'BREAKDOWN', ...it.map(i=>`- ${i.name}: ${money(i.v)} (${i.tag})`)
   ].join('\n');
 }
@@ -806,7 +763,7 @@ function buildPdf(jsPDF, company=''){
   font(12, 'normal', '#B8CCEC'); doc.text('of value a year, once Axya is fully rolled out', M+24, y+92);
   const chips = [
     [`${num(r.hours)} h`, `buyer time back (${num(r.fte,1)} FTE)`],
-    [num(r.expAvoided), 'rush orders avoided'],
+    [money(r.lateV), 'late-order costs avoided'],
     [money(r.total*.6), 'if only 60% materialises']];
   const cw = (CW - 48 - 16) / 3;
   chips.forEach((c, i) => {
@@ -819,7 +776,7 @@ function buildPdf(jsPDF, company=''){
 
   // Inputs
   font(15, 'bold'); doc.text('Your answers', M, y); y += 8;
-  font(9.5, 'normal', C.ink3); doc.text('The six numbers this estimate is built on.', M, y+12); y += 22;
+  font(9.5, 'normal', C.ink3); doc.text('The numbers this estimate is built on.', M, y+12); y += 22;
   const rows = inputRows(), colW = (CW - 12) / 2, rowH = 30;
   doc.setFillColor(C.pill); doc.roundedRect(M, y, CW, Math.ceil(rows.length/2)*rowH + 12, 10, 10, 'F');
   rows.forEach((row, i) => {
@@ -834,7 +791,7 @@ function buildPdf(jsPDF, company=''){
   need(80);
   font(15, 'bold'); doc.text('How we got there', M, y); y += 8;
   font(9.5, 'normal', C.ink3);
-  doc.text(`Five things Axya does, each priced with your numbers. Time back is ${num(r.perBuyerWeek,1)} hours per buyer per week.`, M, y+12);
+  doc.text(`Three things Axya does, each priced with your numbers. Time back is ${num(r.perBuyerWeek,1)} hours per buyer per week.`, M, y+12);
   y += 24;
   let bx = M; const tot = r.total || 1;
   items.forEach(i => { const w = CW * i.v / tot; if (w > 0) { doc.setFillColor(C[i.c.slice(2)]); doc.rect(bx, y, w, 7, 'F'); bx += w; } });
