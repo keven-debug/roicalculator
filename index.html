@@ -503,9 +503,7 @@ function results(){
 function calculator(){
   const fields = STEPS.slice(1).flatMap(s => s.fields);
   app.innerHTML = `<section class="fade">
-    <div class="eyebrow">Value estimator</div>
-    <h2 class="gh">What is PO follow-up costing your team?</h2>
-    <div class="grid calcgrid" style="margin-top:18px">
+    <div class="grid calcgrid">
       <div class="card">
         ${fields.map(f => `<div class="field"><div class="row">
             <label for="f_${f.k}">${f.label}</label>
