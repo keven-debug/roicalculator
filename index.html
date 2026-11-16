@@ -1,5 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Axya Value Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&display=swap" rel="stylesheet">
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 :root{
@@ -113,6 +115,18 @@ details[open] .chev{transform:rotate(-135deg)}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .top{position:static;background:none;backdrop-filter:none;border-bottom:0}
 .top{display:none}
+.calcgrid{grid-template-columns:1fr 1fr;align-items:stretch}
+.live{display:flex;flex-direction:column}
+.live .amt{font-size:clamp(42px,6vw,66px);margin-top:14px}
+.live .chip{flex:1 1 150px}
+.live .chip span{display:block}
+.live .acts{display:grid;gap:10px;margin-top:auto;padding-top:26px;position:relative;z-index:1}
+.btn.onnavy{background:transparent;border:1px solid rgba(255,255,255,.28);color:#fff;box-shadow:none;text-align:center;text-decoration:none}
+.btn.onnavy:hover{background:rgba(255,255,255,.08)}
+@media (max-width:820px){.calcgrid{grid-template-columns:1fr}}
+.grid .card .field .row{align-items:center}
+.grid .card .num{width:180px}
+@media (max-width:820px){.grid .card .num{width:138px;font-size:16px;padding:8px 10px}.grid .card{padding:20px}}
 .toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;z-index:20;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .gate{max-width:560px;margin:28px auto 0}
@@ -155,6 +169,92 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:15}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{.top,.actions,.nav,canvas,.toast{display:none!important}body{background:#fff}details{break-inside:avoid}.big,.prove{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* ===== Axya website design system (Figma: Axya collateral › Axya website design system) ===== */
+:root{
+  --blue-600:#0055FE; --blue-500:#2682FD; --blue-400:#4E9BFF; --blue-200:#BAD1FF; --blue-050:#F0F6FF;
+  --purple-300:#C7AFF4; --navy-950:#03060B; --navy-900:#061736; --navy-800:#081B3D; --navy-700:#10284F;
+  --ink-900:#07152B; --slate-600:#53627A; --slate-300:#B9C8E3; --border-light:#D9E4F2; --border-dark:#24436E;
+  --surface-light:#F5F8FC;
+  --radius-sm:10px; --radius-md:18px; --radius-lg:28px; --radius-pill:999px;
+  --card-soft:0 10px 20px -4px rgba(0,0,0,.06),0 2px 4px -2px rgba(0,0,0,.10);
+  --blue-glow:0 0 32px 4px rgba(38,130,253,.28),inset 0 0 12px rgba(47,139,255,.18);
+  --grad-head-light:linear-gradient(90deg,#0055FE 0%,#2682FD 55%,#4E9BFF 100%);
+  --grad-head-dark:linear-gradient(90deg,#BAD1FF 0%,#4E9BFF 100%);
+  /* legacy names used across the calculator, mapped onto the system */
+  --ink:var(--ink-900); --ink2:var(--slate-600); --ink3:var(--slate-600); --line:var(--border-light);
+  --bg:transparent; --card:#fff; --blue:var(--blue-500); --blue2:var(--blue-600); --navy:var(--navy-900); --pill:var(--blue-050);
+  --c1:var(--blue-600); --c2:var(--blue-400); --c3:var(--purple-300); --c4:var(--navy-700); --c5:var(--slate-300);
+  --shadow:var(--card-soft);
+}
+html,body{background:transparent}
+body{font-family:"Google Sans Flex","Google Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:500;font-size:16px;line-height:1.4;color:var(--ink-900)}
+body::before{display:none}
+b,strong{font-weight:600}
+
+/* Type scale */
+.eyebrow{font-size:12px;line-height:17.4px;font-weight:600;letter-spacing:1.2px;color:var(--blue-500)}
+h1{font-size:clamp(34px,5vw,54px);line-height:1;letter-spacing:-3px;font-weight:500}
+h2{font-size:clamp(28px,3.6vw,38px);line-height:1.1;letter-spacing:-1.5px;font-weight:500}
+.sec>h2{font-size:24px;line-height:31.2px;letter-spacing:-.5px}
+.gh{background:var(--grad-head-light);-webkit-background-clip:text;background-clip:text;color:transparent}
+p.lead{font-size:18px;line-height:27px}
+
+/* Buttons: pill, Blue 500; secondary = outline; on dark = navy with blue edge */
+.btn{border-radius:var(--radius-pill);padding:12px 20px;font-size:16px;line-height:22.4px;font-weight:500;background:var(--blue-500);color:#fff;box-shadow:none;display:inline-flex;align-items:center;justify-content:center;gap:12px;text-decoration:none}
+.btn:hover{background:var(--blue-600);transform:none}
+.btn .arr{width:30px;height:30px;margin:-7px -14px -7px 0;border-radius:50%;background:#fff;color:var(--ink-900);display:inline-grid;place-items:center;flex:none}
+.btn .arr svg{width:14px;height:14px}
+.btn.ghost{background:#fff;color:var(--blue-500);border:1px solid var(--blue-200)}
+.btn.ghost:hover{background:var(--blue-050)}
+.btn.onnavy{background:var(--navy-900);color:var(--blue-400);border:1px solid var(--blue-500)}
+.btn.onnavy:hover{background:var(--navy-800)}
+.btn.onnavy .arr{background:var(--blue-500);color:#fff}
+.btn.sm{padding:9px 16px;border-radius:var(--radius-pill);font-size:14px}
+
+/* Cards (light mode) */
+.card{border:1px solid var(--border-light);border-radius:var(--radius-md);box-shadow:var(--card-soft);padding:24px}
+details{border-color:var(--border-light);border-radius:var(--radius-md)}
+.field{border-top-color:var(--border-light)}
+.field label{font-size:14px;line-height:19.6px;font-weight:500;color:var(--slate-600)}
+
+/* Form fields: pill, Border Light, blue on focus, red on error */
+.num,.gate .in,.hsf .hs-input:not([type=checkbox]):not([type=radio]){border:1px solid var(--border-light);border-radius:var(--radius-pill);font-weight:500;color:var(--ink-900);background:#fff}
+.num{padding:9px 16px;font-size:18px}
+.num:focus,.gate .in:focus,.hsf .hs-input:focus{outline:0;border-color:var(--blue-500)}
+.gate .in.bad,.hsf .hs-input.invalid,.hsf .hs-input.error{border-color:#E5484D}
+.hsf label{font-size:14px;font-weight:500;color:var(--slate-600)}
+.hsf .hs-form-required{color:#E5484D}
+.hsf .hs-button{border-radius:var(--radius-pill);padding:12px 20px;font-weight:500;background:var(--blue-500);box-shadow:none}
+.hsf .hs-button:hover{background:var(--blue-600)}
+input[type=range]{accent-color:var(--blue-500)}
+
+/* Dark panels = CTA panel: Navy 900, radius lg, blue edge + Blue Glow */
+.big,.how,.prove{background:var(--navy-900);border:1px solid rgba(38,130,253,.55);border-radius:var(--radius-lg);box-shadow:var(--blue-glow)}
+.big:after{display:none}
+.big .eyebrow,.how h3,.prove .eyebrow{color:var(--blue-400)!important}
+.big .amt{background:var(--grad-head-dark);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:500;letter-spacing:-3px}
+.big .per{color:var(--slate-300)}
+.prove h2{background:var(--grad-head-dark);-webkit-background-clip:text;background-clip:text;color:transparent}
+.prove li{color:var(--slate-300)}
+.prove li:before{color:var(--blue-400)}
+
+/* Metric card, dark variant */
+.chip{background:var(--navy-800);border:1px solid var(--border-dark);border-radius:var(--radius-md);color:#fff;font-size:14px;padding:14px 16px}
+.chip b{color:var(--blue-400);font-size:28px;font-weight:500;letter-spacing:-.5px}
+.chip span{color:var(--slate-300)}
+
+/* Results details */
+.math{background:var(--surface-light);border-top-color:var(--border-light)}
+.math .ln{border-bottom-color:var(--border-light)}
+summary:hover{background:var(--surface-light)}
+.asm{border-radius:var(--radius-sm);border-color:var(--border-light);background:#fff;color:var(--ink-900)}
+.asm.meas{border-color:var(--blue-200);background:var(--blue-050);color:var(--blue-600)}
+.src{background:var(--blue-050);color:var(--blue-600);border-radius:var(--radius-sm)}
+.pay .out{background:var(--blue-050);border-radius:var(--radius-md)}
+.pay .out .n{color:var(--blue-600);font-weight:500;letter-spacing:-1px}
+.stack{border-radius:var(--radius-pill)}
+.tick{background:var(--blue-500)}
+.toast{background:var(--navy-900)}
 </style>
 
 <header class="top"><div class="in">
@@ -247,9 +347,8 @@ function toTop(){ if (window.parent !== window) parent.postMessage({type:'axya-r
 
 function render(){
   dots();
-  if (S.step===0) return welcome();
-  if (S.step<=3) return stepView(STEPS[S.step]);
-  if (S.step===4) return LEAD ? thinking() : gate();
+  if (S.step===0) return calculator();
+  if (!LEAD) return gate();
   results();
 }
 
@@ -386,7 +485,7 @@ function results(){
 
     <div class="sec">
       <h2>How we got there</h2>
-      <p>Five things Axya does, each priced with your numbers. Open a line to see the math, and change any box. <i class="key" style="background:#EEFBF9;border-color:#A9E3DC"></i>Measured on Axya customers <i class="key" style="background:var(--pill);border-color:#C9DCFB"></i>Our assumption</p>
+      <p>Five things Axya does, each priced with your numbers. Open a line to see the math, and change any box. <i class="key" style="background:var(--blue-050);border-color:var(--blue-200)"></i>Measured on Axya customers <i class="key" style="background:#fff;border-color:var(--border-light)"></i>Our assumption</p>
       ${r.perBuyerWeek>25?`<div class="warn">These savings add up to ${num(r.perBuyerWeek)} hours per buyer per week, which is more time than most buyers spend on order follow-up. Check the PO volume or lower the assumptions.</div>`:''}
       <div class="stack" aria-hidden="true">${items.map(i=>`<i style="width:${i.v/tot*100}%;background:var(${i.c})"></i>`).join('')}</div>
       <p class="note" style="margin:0 0 14px">Time back comes to ${num(r.perBuyerWeek,1)} hours per buyer per week. That is the figure to sanity-check with your team.</p>
@@ -414,7 +513,7 @@ function results(){
       <div><div class="eyebrow" style="color:#8DBEFF">Prove it first</div>
         <h2 style="margin:6px 0 0">An estimate is not a result. A pilot is.</h2>
         <ul><li>90-day pilot from go-live</li><li>Baseline measured in week 1</li><li>Success is your number</li><li>Miss it at day 90, opt out</li></ul></div>
-      <a class="btn" href="https://www.axya.co/get-a-demo" target="_blank" rel="noopener" style="text-decoration:none">Talk to us about a pilot</a>
+      <a class="btn" href="https://www.axya.co/get-a-demo" target="_blank" rel="noopener" style="text-decoration:none">Talk to us about a pilot<span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
     </div>
 
     <div class="actions">
@@ -437,9 +536,62 @@ function results(){
   q.oninput = () => { S.quote = parse(q.value); payout(); };
   q.onblur = () => { q.value = S.quote ? money(S.quote) : ''; };
   q.onfocus = () => q.select();
-  $('#edit').onclick = () => go(1);
+  $('#edit').onclick = () => go(0);
   $('#reset').onclick = () => { S = structuredClone(DEFAULTS); results.last = 0; render(); };
   $('#export').onclick = exportPdf;
+}
+
+// ---------- Single-screen calculator: all inputs on the left, live Axya numbers on the right ----------
+function calculator(){
+  const fields = STEPS.slice(1).flatMap(s => s.fields);
+  app.innerHTML = `<section class="fade">
+    <div class="eyebrow">Value estimator</div>
+    <h2 class="gh">What is PO follow-up costing your team?</h2>
+    <div class="grid calcgrid" style="margin-top:18px">
+      <div class="card">
+        ${fields.map(f => `<div class="field"><div class="row">
+            <label for="f_${f.k}">${f.label}</label>
+            <input class="num" id="f_${f.k}" inputmode="decimal" autocomplete="off"></div>
+          <input type="range" data-k="${f.k}" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.label}"></div>`).join('')}
+      </div>
+      <aside class="big live" aria-live="polite">
+        <div class="eyebrow">Your numbers with Axya</div>
+        <div class="amt" id="p_sav"></div>
+        <div class="per">annual savings</div>
+        <div class="chips">
+          <div class="chip"><b id="p_h"></b><span id="p_hs"></span></div>
+          <div class="chip"><b id="p_l"></b><span id="p_ls"></span></div>
+        </div>
+        <div class="acts">
+          <button class="btn" id="full">See full ROI<span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></button>
+          <a class="btn onnavy" href="https://www.axya.co/get-a-demo" target="_blank" rel="noopener">Book a demo<span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+        </div>
+      </aside>
+    </div></section>`;
+  const show = (f, focusEl) => {
+    const v = S[f.k], t = f.money ? money(v) : num(v, Number.isInteger(v)?0:(f.d||0)) + (f.suffix||'');
+    const n = $(`#f_${f.k}`); if (n !== focusEl) n.value = t;
+    const r = $(`input[type=range][data-k=${f.k}]`); if (r !== focusEl) r.value = v;
+  };
+  const refresh = el => {
+    fields.forEach(f => show(f, el));
+    const r = calc();
+    $('#p_sav').textContent = money(r.total);
+    $('#p_h').textContent = num(r.hours) + ' h';
+    $('#p_hs').textContent = `time back a year, about ${num(r.fte,1)} FTE`;
+    $('#p_l').textContent = num(S.a.lateReduction) + '%';
+    $('#p_ls').textContent = `late order reduction, ${num(r.expAvoided)} rush orders avoided`;
+  };
+  fields.forEach(f => {
+    const n = $(`#f_${f.k}`), r = $(`input[type=range][data-k=${f.k}]`);
+    r.oninput = () => { S[f.k] = +r.value; refresh(r); };
+    n.oninput = () => { S[f.k] = parse(n.value); refresh(n); };
+    n.onblur = () => { if (S[f.k] < f.min && f.min > 0) S[f.k] = f.min; refresh(); };
+    n.onfocus = () => n.select();
+    n.onkeydown = e => { if (e.key === 'Enter') n.blur(); };
+  });
+  refresh();
+  $('#full').onclick = () => go(5);
 }
 
 // ---------- Gate: the HubSpot form itself, with the results summary in its hidden "message" field ----------
@@ -465,7 +617,7 @@ function setVal(el, v){
 function gate(){
   app.innerHTML = `<section class="gate fade">
     <div class="eyebrow">Almost there</div>
-    <h2>Your estimate is ready</h2>
+    <h2 class="gh">Your estimate is ready</h2>
     <p style="color:var(--ink2);margin:0">Tell us where you work to see the result.</p>
     <div class="card">
       <ul class="teaser">
@@ -477,9 +629,9 @@ function gate(){
       <button type="button" id="back" style="border:0;background:none;color:var(--ink3);padding:12px 0 0;font-size:14px">← Back to my answers</button>
       <p class="fine">We use this to follow up on your estimate. No newsletter, no spam.</p>
     </div></section>`;
-  $('#back').onclick = () => go(3);
+  $('#back').onclick = () => go(0);
   let ready = false;
-  const fallback = setTimeout(() => { if (!ready && S.step === 4 && !LEAD) { console.warn('[Axya ROI] HubSpot form did not load, using fallback gate'); customGate(); } }, 8000);
+  const fallback = setTimeout(() => { if (!ready && S.step !== 0 && !LEAD) { console.warn('[Axya ROI] HubSpot form did not load, using fallback gate'); customGate(); } }, 8000);
 
   // HubSpot fills hidden fields from the page's query string when the form renders (its documented way).
   // Setting the DOM value afterwards is ignored by the form, so put the summary in the URL first.
@@ -510,15 +662,15 @@ function gate(){
       gate.sync?.(); gate.pending = {email: q('email'), company: q('company')};
     },
     onFormSubmitted: () => { const u = new URL(location.href); [HS.resultsField, ...HS.altFields].forEach(n => u.searchParams.delete(n)); history.replaceState(null, '', u);
-      LEAD = gate.pending || {email:'', company:''}; render(); scrollTo(0,0); toTop(); }
-  })).catch(x => { console.warn('[Axya ROI]', x); clearTimeout(fallback); if (S.step === 4 && !LEAD) customGate(); });
+      LEAD = gate.pending || {email:'', company:''}; render(); scrollTo(0,0); toTop(); celebrate(); }
+  })).catch(x => { console.warn('[Axya ROI]', x); clearTimeout(fallback); if (S.step !== 0 && !LEAD) customGate(); });
 }
 
 // ---------- Gate: email + company before results ----------
 function customGate(){
   app.innerHTML = `<section class="gate fade">
     <div class="eyebrow">Almost there</div>
-    <h2>Your estimate is ready</h2>
+    <h2 class="gh">Your estimate is ready</h2>
     <p style="color:var(--ink2);margin:0">Tell us where you work to see the result.</p>
     <form class="card" id="leadForm" novalidate>
       <ul class="teaser">
@@ -537,7 +689,7 @@ function customGate(){
     </form></section>`;
   const e = $('#g_email'), c = $('#g_company'), err = $('#g_err'), go_ = $('#g_go');
   e.focus({preventScroll:true});
-  $('#back').onclick = () => go(3);
+  $('#back').onclick = () => go(0);
   $('#leadForm').onsubmit = async ev => {
     ev.preventDefault(); err.textContent = ''; e.classList.remove('bad'); c.classList.remove('bad');
     const email = e.value.trim(), company = c.value.trim();
@@ -548,7 +700,7 @@ function customGate(){
     go_.disabled = false; go_.textContent = 'See my results';
     if (res.emailError) { e.classList.add('bad'); err.textContent = res.emailError; return e.focus(); }
     LEAD = {email, company};
-    render(); scrollTo(0,0); toTop();
+    render(); scrollTo(0,0); toTop(); celebrate();
   };
 }
 
@@ -627,9 +779,10 @@ function buildPdf(jsPDF, company=''){
   const r = calc(), items = valueItems(r, (k,s='')=>k==='expediteCost' ? money(S.a[k]) : num(S.a[k], Number.isInteger(S.a[k])?0:1)+s);
   const doc = new jsPDF({unit:'pt', format:'letter'});
   const W = 612, H = 792, M = 48, CW = W - 2*M;
-  const C = { ink:'#0B1424', ink2:'#4B5768', ink3:'#6B7686', line:'#E7EAF0', blue:'#2682FD', blue2:'#1866DB',
-    navy:'#061736', pill:'#F2F7FF', light:'#8DBEFF', soft:'#D6E4FA', green:'#0B7A6E', greenBg:'#EEFBF9',
-    c1:'#2682FD', c2:'#6C5CE7', c3:'#12B5A6', c4:'#F59E0B', c5:'#E5484D' };
+  // Axya website design system palette
+  const C = { ink:'#07152B', ink2:'#53627A', ink3:'#53627A', line:'#D9E4F2', blue:'#2682FD', blue2:'#0055FE',
+    navy:'#061736', pill:'#F0F6FF', light:'#4E9BFF', soft:'#B9C8E3', green:'#0055FE', greenBg:'#F0F6FF',
+    c1:'#0055FE', c2:'#4E9BFF', c3:'#C7AFF4', c4:'#10284F', c5:'#B9C8E3' };
   const date = new Date().toLocaleDateString('en-CA', {year:'numeric', month:'long', day:'numeric'});
   let y = M;
   const font = (size, style='normal', color=C.ink) => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(color); };
@@ -658,8 +811,8 @@ function buildPdf(jsPDF, company=''){
   const cw = (CW - 48 - 16) / 3;
   chips.forEach((c, i) => {
     const x = M + 24 + i*(cw+8);
-    doc.setFillColor('#1A2A48'); doc.roundedRect(x, y+108, cw, 42, 8, 8, 'F');
-    font(13, 'bold', '#FFFFFF'); doc.text(c[0], x+10, y+125);
+    doc.setFillColor('#081B3D'); doc.setDrawColor('#24436E'); doc.roundedRect(x, y+108, cw, 42, 8, 8, 'FD');
+    font(13, 'bold', C.light); doc.text(c[0], x+10, y+125);
     font(8.5, 'normal', C.soft); doc.text(c[1], x+10, y+140);
   });
   y += heroH + 26;
@@ -774,7 +927,7 @@ function celebrate(n=160){
   if (reduce) return;
   const c = $('#fx'), x = c.getContext('2d'), dpr = devicePixelRatio||1;
   c.width = innerWidth*dpr; c.height = innerHeight*dpr; x.scale(dpr,dpr);
-  const cols = ['#2682FD','#8DBEFF','#6C5CE7','#12B5A6','#F59E0B','#ffffff'];
+  const cols = ['#0055FE','#2682FD','#4E9BFF','#BAD1FF','#C7AFF4','#ffffff'];
   const ps = Array.from({length:n},(_,i)=>{ const side = i%2 ? 1 : -1; return {
     x: innerWidth/2 + side*innerWidth*.32, y: innerHeight*.55,
     vx: -side*(2+Math.random()*7), vy: -(9+Math.random()*9), r: 4+Math.random()*5, c: cols[i%cols.length],
